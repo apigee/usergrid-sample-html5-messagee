@@ -1,6 +1,8 @@
+var app_name = 'MessageeApp';
+
 app.controllers.MsgController = new Ext.Controller({
 	loadmessages: function(options) {
-		app.views.msgPanel.getStore().proxy.url= client.apiUrl + '/Twid/users/' + appUser + '/feed?pos=end&prev=10&access_token=' + client.accessToken;
+		app.views.msgPanel.getStore().proxy.url= client.apiUrl + '/' + app_name + '/users/' + appUser + '/feed?pos=end&prev=10&access_token=' + client.accessToken;
 		app.views.msgPanel.getStore().load();
 		
 		if(refreshMessagesLoad) {
@@ -11,7 +13,7 @@ app.controllers.MsgController = new Ext.Controller({
     showmessage: function(options) {
     	var msg= app.views.msgPanel.getStore().getAt(options.index);
     	if(msg.data.lat==undefined) {
-        	Ext.Msg.alert('Twid','Message does not contain location.', Ext.emptyFn);
+        	Ext.Msg.alert('Messagee','Message does not contain location.', Ext.emptyFn);
         	app.views.msgPanel.getList().getSelectionModel().deselectAll();
     	} else {
 
@@ -31,7 +33,7 @@ app.controllers.MsgController = new Ext.Controller({
     	app.views.viewport.setActiveItem(app.views.settingsPanel, options.animation);
     },
     savesettings: function(options) {
-    	client.loginAppUser("Twid", options.data.username, options.data.password, function(){
+    	client.loginAppUser(app_name, options.data.username, options.data.password, function(){
         	if(options.record.phantom) {
             	app.stores.users.create(options.data);
         	} else {
@@ -43,7 +45,7 @@ app.controllers.MsgController = new Ext.Controller({
         	
 			/*
         	try {
-        		client.apiRequest('PUT',client.encodePathString('/Twid/users/' + appUser + '/following/'+ appUser +'-in'), null, '{}', function(res){}, function(res){Ext.Msg.alert('Twid', 'Auto subscribe failed.', Ext.emptyFn);});
+        		client.apiRequest('PUT',client.encodePathString('/' + app_name + '/users/' + appUser + '/following/'+ appUser +'-in'), null, '{}', function(res){}, function(res){Ext.Msg.alert('Messagee', 'Auto subscribe failed.', Ext.emptyFn);});
         	} catch(e) {
         		console.log('HTTP PUT not working');
         	}
@@ -57,7 +59,7 @@ app.controllers.MsgController = new Ext.Controller({
         	app.views.viewport.setActiveItem(app.views.msgPanel, options.animation);
     	},
     	function(options) {
-        	Ext.Msg.alert('Twid','Invalid Username or Password', Ext.emptyFn);
+        	Ext.Msg.alert('Messagee','Invalid Username or Password', Ext.emptyFn);
     	});
     },
     backsettings: function(options) {
@@ -75,7 +77,7 @@ app.controllers.MsgController = new Ext.Controller({
         		if(btn=='ok') {
         			try {
         	  			console.log(text);
-                		client.apiRequest('POST',client.encodePathString('/Twid/users/' + appUser + '/following/user/'+ text), null, '{}', function(res){}, function(res){Ext.Msg.alert('Twid', 'Follow user failed.', Ext.emptyFn);});
+                		client.apiRequest('POST',client.encodePathString('/' + app_name + '/users/' + appUser + '/following/user/'+ text), null, '{}', function(res){}, function(res){Ext.Msg.alert('Messagee', 'Follow user failed.', Ext.emptyFn);});
                 		
                 		Ext.dispatch({
                 			controller: app.controllers.MsgController,
@@ -90,7 +92,7 @@ app.controllers.MsgController = new Ext.Controller({
     	});
     },
     alertuser: function(options) {
-    	Ext.Msg.alert('Twid',options.message, Ext.emptyFn);
+    	Ext.Msg.alert('Messagee',options.message, Ext.emptyFn);
     },
     newmessage: function(options) {
     	app.views.newMsgPanel.reset();
@@ -115,7 +117,7 @@ app.controllers.MsgController = new Ext.Controller({
     	navigator.geolocation.getCurrentPosition(function(pos) {
     		Ext.apply(data, {lat:pos.coords.latitude, lon: pos.coords.longitude});
     		
-    		client.apiRequest('POST',client.encodePathString('/Twid/users/' + appUser + '/activities'), null, Ext.util.JSON.encode(data),function(res){}, function(res){Ext.Msg.alert('Twid', 'New message failed.', Ext.emptyFn);});
+    		client.apiRequest('POST',client.encodePathString('/' + app_name + '/users/' + appUser + '/activities'), null, Ext.util.JSON.encode(data),function(res){}, function(res){Ext.Msg.alert('Messagee', 'New message failed.', Ext.emptyFn);});
     		
     		Ext.dispatch({
     			controller: app.controllers.MsgController,
@@ -123,7 +125,7 @@ app.controllers.MsgController = new Ext.Controller({
     		});
         	app.views.viewport.setActiveItem(app.views.msgPanel, options.animation);
     	}, function(){
-	    		client.apiRequest('POST',client.encodePathString('/Twid/users/' + appUser + '/activities'), null, Ext.util.JSON.encode(data),function(res){}, function(res){Ext.Msg.alert('Twid', 'New message failed.', Ext.emptyFn);});
+	    		client.apiRequest('POST',client.encodePathString('/' + app_name + '/users/' + appUser + '/activities'), null, Ext.util.JSON.encode(data),function(res){}, function(res){Ext.Msg.alert('Messagee', 'New message failed.', Ext.emptyFn);});
 	    		
 	    		Ext.dispatch({
 	    			controller: app.controllers.MsgController,

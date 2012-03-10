@@ -13,7 +13,7 @@ var newMessageButton = new Ext.Button({
 var topToolbar = new Ext.Toolbar({
     dock : 'top',
     ui: 'dark',
-    title: 'Twid - Messages Board',
+    title: 'Messagee',
     items: [{xtype:'spacer'}, newMessageButton]
 });
 

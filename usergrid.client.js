@@ -30,7 +30,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     })();
 
     // Always use public API
-    var FORCE_PUBLIC_API = false;
+    var FORCE_PUBLIC_API = true;
 
     // Public API
     var PUBLIC_API_URL = "http://api.usergrid.com";
