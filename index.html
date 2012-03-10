@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta name="viewport" content="width=320; user-scalable=no" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>Twid</title>
+      <link rel="stylesheet" href="sencha/resources/css/sencha-touch.css" type="text/css">
+      <style type="text/css">
+        #tweet_container {
+            margin: 10px;
+            padding: 5px;
+            -webkit-border-radius: .5em;
+            -moz-border-radius: .5em;
+            border-radius: .5em;
+            border: 1px solid #8BBCD6;
+        }
+        .clear {
+            clear: both;
+        }
+        .tweet_data {
+            padding: 5px;
+        }
+        .tweet_avatar {
+            float: left;
+            width: 40px;
+        }
+        .tweet_content {
+            float: left;
+            width: 235px;
+            line-height: 16px;
+            color: #333;
+            font-size: 11px;
+        }
+        .user {
+            font-weight: bold;
+            color: #8BBCD6;
+            text-decoration: none;
+        }
+        .outlink {
+            color: #0099cc;
+            text-decoration: none;
+        }
+    </style>
+      <script type="text/javascript" src="sencha/sencha-touch-debug.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="phonegap-1.0.0.js"></script>
+	  <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+	  <script type="text/javascript" charset="utf-8" src="main.js"></script>
+      <script type="text/javascript" src="app/app.js"></script>
+      <script type="text/javascript" src="md5.js"></script>
+      <script type="text/javascript" src="app/models/Activity.js"></script>
+      <script type="text/javascript" src="app/models/Users.js"></script>
+      <script type="text/javascript" src="app/stores/Users.js"></script>
+      <script type="text/javascript" src="app/controllers/MsgController.js"></script>
+      <script type="text/javascript" src="app/views/Viewport.js"></script>
+      <script type="text/javascript" src="app/views/MsgPanel.js"></script>
+      <script type="text/javascript" src="app/views/OtherPanel.js"></script>
+      <script type="text/javascript" src="app/views/SettingsPanel.js"></script>
+      <script type="text/javascript" src="app/views/NewMsgPanel.js"></script>
+      <script type="text/javascript" src="usergrid.client.js"></script>
+	  <script type="text/javascript">document.addEventListener("deviceready", app.mainLaunch, false);</script>
+	  </head>
+  <body></body>
+</html>
