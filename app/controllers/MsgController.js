@@ -64,7 +64,7 @@ app.controllers.MsgController = new Ext.Controller({
     },
     newUser: function(options) {
         
-        client.createUser(app_name, options.data.username, 'Fred Flintstone', 'fred@fred.com', options.data.password, 
+        client.createUser(app_name, options.data.username, '', '', options.data.password, 
             function(){            
                 alert('user created');
                 //user was created, so now try to log them in
