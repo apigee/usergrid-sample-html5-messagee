@@ -130,16 +130,17 @@ app.controllers.MsgController = new Ext.Controller({
     	app.views.viewport.setActiveItem(app.views.newMsgPanel, options.animation);
     },
     send: function(options) {
-    	
+		var email = '';
+		if (client.loggedInUser.email) { email = hex_md5(client.loggedInUser.email); }
     	var data= {
     			actor: {
 					displayName: appUser,
 					image : {
-						url: "http://www.gravatar.com/avatar/" + hex_md5(client.loggedInUser.email),
+						url: "http://www.gravatar.com/avatar/" + email,
 						height: 80,
 						width: 80
 					},
-					email: client.loggedInUser.email
+					email: email
 				},
 				verb: "post",
     			content: app.views.newMsgPanel.getText()
