@@ -33,34 +33,66 @@ app.controllers.MsgController = new Ext.Controller({
     	app.views.viewport.setActiveItem(app.views.settingsPanel, options.animation);
     },
     savesettings: function(options) {
-    	client.loginAppUser(app_name, options.data.username, options.data.password, function(){
-        	if(options.record.phantom) {
-            	app.stores.users.create(options.data);
-        	} else {
-        		options.record.set(options.data);
-        		options.record.save();
-        	}
-        	
-        	appUser= client.loggedInUser.username;
-        	
-			/*
-        	try {
-        		client.apiRequest('PUT',client.encodePathString('/' + app_name + '/users/' + appUser + '/following/'+ appUser +'-in'), null, '{}', function(res){}, function(res){Ext.Msg.alert('Messagee', 'Auto subscribe failed.', Ext.emptyFn);});
-        	} catch(e) {
-        		console.log('HTTP PUT not working');
-        	}
-			*/
-        	
-    		Ext.dispatch({
-    			controller: app.controllers.MsgController,
-    			action: 'loadmessages'
-    		});
-        	
-        	app.views.viewport.setActiveItem(app.views.msgPanel, options.animation);
-    	},
-    	function(options) {
-        	Ext.Msg.alert('Messagee','Invalid Username or Password', Ext.emptyFn);
-    	});
+        client.loginAppUser(app_name, options.data.username, options.data.password, function(){
+            if(options.record.phantom) {
+                app.stores.users.create(options.data);
+            } else {
+                options.record.set(options.data);
+                options.record.save();
+            }
+            
+            appUser= client.loggedInUser.username;
+            
+            /*
+            try {
+                client.apiRequest('PUT',client.encodePathString('/' + app_name + '/users/' + appUser + '/following/'+ appUser +'-in'), null, '{}', function(res){}, function(res){Ext.Msg.alert('Messagee', 'Auto subscribe failed.', Ext.emptyFn);});
+            } catch(e) {
+                console.log('HTTP PUT not working');
+            }
+            */
+            
+            Ext.dispatch({
+                controller: app.controllers.MsgController,
+                action: 'loadmessages'
+            });
+            
+            app.views.viewport.setActiveItem(app.views.msgPanel, options.animation);
+        },
+        function(options) {
+            Ext.Msg.alert('Messagee','Invalid Username or Password', Ext.emptyFn);
+        });
+    },
+    newUser: function(options) {
+        
+        client.createUser(app_name, options.data.username, 'Fred Flintstone', 'fred@fred.com', options.data.password, 
+            function(){            
+                alert('user created');
+                //user was created, so now try to log them in
+                client.loginAppUser(app_name, options.data.username, options.data.password, 
+                    function(){
+                        if(options.record.phantom) {
+                            app.stores.users.create(options.data);
+                        } else {
+                            options.record.set(options.data);
+                            options.record.save();
+                        }
+                        
+                        appUser= client.loggedInUser.username;
+                        
+                        Ext.dispatch({
+                            controller: app.controllers.MsgController,
+                            action: 'loadmessages'
+                        });
+                        
+                        app.views.viewport.setActiveItem(app.views.msgPanel, options.animation);
+                    },
+                    function(options) {
+                        Ext.Msg.alert('Messagee','Invalid Username or Password', Ext.emptyFn);
+                    });
+            }, 
+            function(options) {
+                Ext.Msg.alert('Messagee','Invalid Username or Password - Account could not be created', Ext.emptyFn);
+            });       
     },
     backsettings: function(options) {
     	app.views.msgPanel.getList().getSelectionModel().deselectAll();

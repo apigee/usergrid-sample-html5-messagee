@@ -41,25 +41,43 @@ app.views.SettingsPanel = Ext.extend(Ext.form.FormPanel,{
     		handler: this.onOkAction,
     		scope:this
     	});
+        
+        var newButton = new Ext.Button({
+            ui: 'confirm',
+            text: 'New Account',
+            handler: this.onNewAction,
+            scope:this
+        });
     	
     	var settingsToolbar = new Ext.Toolbar({
     	    dock : 'bottom',
     	    ui: 'light',
-    	    items: [cancelButton,{xtype:'spacer'},okButton]
+    	    items: [cancelButton,{xtype:'spacer'},okButton, newButton]
     	});
     	
     	Ext.apply(this, {dockedItems: [{xtype:'toolbar', dock:'top', title:'User Settings'},settingsToolbar]});
     	
     	app.views.SettingsPanel.superclass.initComponent.call(this);
     },
-	onOkAction: function() {
-		var model= this.getRecord();
-		if(model== undefined) {
-			model= new app.models.Users();
-		}
+    onOkAction: function() {
+        var model= this.getRecord();
+        if(model== undefined) {
+            model= new app.models.Users();
+        }
+        Ext.dispatch({
+            controller: app.controllers.MsgController,
+            action: 'savesettings',
+            data: this.getValues(),
+            record: model,
+            animation: {type:'slide', direction:'down'}
+        });
+    },
+	onNewAction: function() {
+		var model = new app.models.Users();
+		
 		Ext.dispatch({
 			controller: app.controllers.MsgController,
-			action: 'savesettings',
+			action: 'newUser',
 			data: this.getValues(),
 			record: model,
 			animation: {type:'slide', direction:'down'}
