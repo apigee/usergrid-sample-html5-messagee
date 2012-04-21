@@ -33,7 +33,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     var FORCE_PUBLIC_API = true;
 
     // Public API
-    var PUBLIC_API_URL = "http://api.usergrid.com";
+    var PUBLIC_API_URL = "https://api.usergrid.com";
 
     // Local API of standalone server
     var LOCAL_STANDALONE_API_URL = "http://localhost:8080";
