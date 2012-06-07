@@ -1,8 +1,9 @@
 var app_name = 'MessageeApp';
+var org_name = 'Apigee';
 
 app.controllers.MsgController = new Ext.Controller({
 	loadmessages: function(options) {
-		app.views.msgPanel.getStore().proxy.url= client.apiUrl + '/' + app_name + '/users/' + appUser + '/feed?pos=end&prev=10&access_token=' + client.accessToken;
+		app.views.msgPanel.getStore().proxy.url= client.apiUrl + '/' + org_name + '/' + app_name + '/users/' + appUser + '/feed?pos=end&prev=10&access_token=' + client.accessToken;
 		app.views.msgPanel.getStore().load();
 		
 		if(refreshMessagesLoad) {
@@ -62,8 +63,15 @@ app.controllers.MsgController = new Ext.Controller({
             Ext.Msg.alert('Messagee','Invalid Username or Password', Ext.emptyFn);
         });
     },
+    /*
+    * Creates a new user, then if user creation is sucuessful, will log that user in 
+    * 
+    * @param app_name   the unique id of the app
+    * @param username   the username of the user to create
+    * @param password   the user's password
+    */
     newUser: function(options) {
-        
+        //attempt to create a new user 
         client.createUser(app_name, options.data.username, '', '', options.data.password, 
             function(){                            
                 //user was created, so now try to log them in
@@ -108,7 +116,7 @@ app.controllers.MsgController = new Ext.Controller({
         		if(btn=='ok') {
         			try {
         	  			console.log(text);
-                		client.apiRequest('POST',client.encodePathString('/' + app_name + '/users/' + appUser + '/following/user/'+ text), null, '{}', function(res){}, function(res){Ext.Msg.alert('Messagee', 'Follow user failed.', Ext.emptyFn);});
+                		client.apiRequest('POST',client.encodePathString('/' + org_name + '/' + app_name + '/users/' + appUser + '/following/user/'+ text), null, '{}', function(res){}, function(res){Ext.Msg.alert('Messagee', 'Follow user failed.', Ext.emptyFn);});
                 		
                 		Ext.dispatch({
                 			controller: app.controllers.MsgController,
@@ -149,7 +157,7 @@ app.controllers.MsgController = new Ext.Controller({
     	navigator.geolocation.getCurrentPosition(function(pos) {
     		Ext.apply(data, {lat:pos.coords.latitude, lon: pos.coords.longitude});
     		
-    		client.apiRequest('POST',client.encodePathString('/' + app_name + '/users/' + appUser + '/activities'), null, Ext.util.JSON.encode(data),function(res){}, function(res){Ext.Msg.alert('Messagee', 'New message failed.', Ext.emptyFn);});
+    		client.apiRequest('POST',client.encodePathString('/' + org_name + '/' + app_name + '/users/' + appUser + '/activities'), null, Ext.util.JSON.encode(data),function(res){}, function(res){Ext.Msg.alert('Messagee', 'New message failed.', Ext.emptyFn);});
     		
     		Ext.dispatch({
     			controller: app.controllers.MsgController,
@@ -157,7 +165,7 @@ app.controllers.MsgController = new Ext.Controller({
     		});
         	app.views.viewport.setActiveItem(app.views.msgPanel, options.animation);
     	}, function(){
-	    		client.apiRequest('POST',client.encodePathString('/' + app_name + '/users/' + appUser + '/activities'), null, Ext.util.JSON.encode(data),function(res){}, function(res){Ext.Msg.alert('Messagee', 'New message failed.', Ext.emptyFn);});
+	    		client.apiRequest('POST',client.encodePathString('/' + org_name + '/' + app_name + '/users/' + appUser + '/activities'), null, Ext.util.JSON.encode(data),function(res){}, function(res){Ext.Msg.alert('Messagee', 'New message failed.', Ext.emptyFn);});
 	    		
 	    		Ext.dispatch({
 	    			controller: app.controllers.MsgController,

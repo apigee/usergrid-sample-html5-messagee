@@ -8,6 +8,7 @@ Ext.regApplication({
     mainLaunch: function() {
         if ((on_device && !window.device) || !this.launched) {return;}
 		client = new usergrid.Client();
+        client.currentOrganization = org_name;
         this.views.viewport = new this.views.Viewport();
         refreshMessagesLoad=true;
         

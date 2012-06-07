@@ -594,7 +594,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     // GET: /<application-id>
     //
     function requestCollections(applicationId, success, failure) {
-        apiGetRequest("/" + applicationId, null, success, failure);
+        apiGetRequest("/" + self.currentOrganization + "/" + applicationId, null, success, failure);
     }
     this.requestCollections = requestCollections;
 
@@ -611,7 +611,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
                 collections: collections
             }
         };
-        apiRequest("PUT", "/" + applicationId, null, JSON.stringify(metadata), success, failure);
+        apiRequest("PUT", "/" + self.currentOrganization + "/" + applicationId, null, JSON.stringify(metadata), success, failure);
     }
     this.createCollection = createCollection;
 
@@ -621,7 +621,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     // GET: /<application-id>/auth/keys
     //
     function requestApplicationCredentials(applicationId, success, failure) {
-        apiGetRequest("/" + applicationId + "/credentials", null, success, failure);
+        apiGetRequest("/" + self.currentOrganization + "/" + applicationId + "/credentials", null, success, failure);
     }
     this.requestApplicationCredentials = requestApplicationCredentials;
 
@@ -631,7 +631,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     // POST: /<application-id>/auth/keys
     //
     function regenerateApplicationCredentials(applicationId, success, failure) {
-        apiRequest("POST", "/" + applicationId + "/credentials", null, null, success, failure);
+        apiRequest("POST", "/" + self.currentOrganization + "/" + applicationId + "/credentials", null, null, success, failure);
     }
     this.regenerateApplicationCredentials = regenerateApplicationCredentials;
 
@@ -641,7 +641,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     // GET: /<application-id>/rolenames
     //
     function requestApplicationRoles(applicationId, success, failure) {
-        apiGetRequest("/" + applicationId + "/rolenames", null, success, failure);
+        apiGetRequest("/" + self.currentOrganization + "/" + applicationId + "/rolenames", null, success, failure);
     }
     this.requestApplicationRoles = requestApplicationRoles;
 
@@ -651,7 +651,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     // GET: /<application-id>/counters
     //
     function requestApplicationCounterNames(applicationId, success, failure) {
-        apiGetRequest("/" + applicationId + "/counters", null, success, failure);
+        apiGetRequest("/" + self.currentOrganization + "/" + applicationId + "/counters", null, success, failure);
     }
     this.requestApplicationCounterNames = requestApplicationCounterNames;
 
@@ -667,7 +667,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
         if (resolution) params.resolution = resolution;
         if (counter) params.counter = counter;
         params.pad = true;
-        apiGetRequest("/" + applicationId + "/counters", params, success, failure);
+        apiGetRequest("/" + self.currentOrganization + "/" + applicationId + "/counters", params, success, failure);
     }
     this.requestApplicationCounters = requestApplicationCounters;
 
@@ -718,7 +718,6 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     function loginAdmin(email, password, success, failure) {
         self.loggedInUser = null;
         self.accessToken = null;
-        self.currentOrganization = null;
         localStorage.removeItem('usergrid_user');
         localStorage.removeItem('usergrid_access_token');
         var formdata = {
@@ -731,7 +730,6 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
             if (response && response.access_token && response.user) {
                 self.loggedInUser = response.user;
                 self.accessToken = response.access_token;
-                self.currentOrganization = null;
                 if (self.loggedInUser.organizations) {
                     for (first in self.loggedInUser.organizations) break;
                     if (first) {
@@ -759,7 +757,6 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     function loginAppUser(applicationId, email, password, success, failure) {
         self.loggedInUser = null;
         self.accessToken = null;
-        self.currentOrganization = null;
         localStorage.removeItem('usergrid_user');
         localStorage.removeItem('usergrid_access_token');
         var formdata = {
@@ -767,12 +764,11 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
             username: email,
             password: password
         };
-        apiRequest("POST", "/"+ applicationId + "/token", formdata, null,
+        apiRequest("POST", "/"+ self.currentOrganization + "/" + applicationId + "/token", formdata, null,
         function(response) {
             if (response && response.access_token && response.user) {
                 self.loggedInUser = response.user;
                 self.accessToken = response.access_token;
-                self.currentOrganization = null;
                 localStorage.setObject('usergrid_user', self.loggedInUser);
                 localStorage.setObject('usergrid_access_token', self.accessToken);
                 if (success) {
@@ -797,7 +793,6 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
         function(response) {
             if (response && response.data) {
                 self.loggedInUser = response.data;
-                self.currentOrganization = null;
                 if (self.loggedInUser.organizations) {
                     for (first in self.loggedInUser.organizations) break;
                     if (first) {
@@ -867,7 +862,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     this.signup = signup;
 
     function getUser(a) {
-        var ns = self.applicationId;
+        var ns = self.currentOrganization + "/" + self.applicationId;
         var id = arguments[0];
         if (countByType("string", arguments) >= 2) {
             ns = getByType("string", 0, arguments);
@@ -886,10 +881,10 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     this.getUser = getUser;
 
     function queryEntities(root_collection, a) {
-        var ns = self.applicationId;
+        var ns = self.currentOrganization + "/" + self.applicationId;
         if (countByType("string", a) > 0) {
             ns = getByType("string", 0, a);
-            if (!ns) ns = self.applicationId;
+            if (!ns) ns = self.currentOrganization + "/" + self.applicationId;
         }
         var success = getByType("function", 0, a);
         var failure = getByType("function", 1, a);
@@ -909,7 +904,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     this.queryUsers = queryUsers;
 
     function queryEntityCollection(root_collection, entity_collection, a) {
-        var ns = self.applicationId;
+        var ns = self.currentOrganization + "/" + self.applicationId;
         var id = a[0];
         if (countByType("string", a) >= 2) {
             ns = getByType("string", 0, a);
@@ -959,7 +954,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     // POST: /<application-id/users
     //
     function createUser(applicationId, username, fullname, email, password, success, failure) {
-        apiRequest("POST", "/" + applicationId + "/users", null, JSON.stringify({
+        apiRequest("POST", "/" + self.currentOrganization + "/" + applicationId + "/users", null, JSON.stringify({
             username: username,
             name: fullname,
             email: email,
@@ -969,10 +964,10 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
     this.createUser = createUser;
 
     function queryActivities(a) {
-        var ns = self.applicationId;
+        var ns = self.currentOrganization + "/" + self.applicationId;
         if (countByType("string", arguments) > 0) {
             ns = getByType("string", 0, arguments);
-            if (!ns) ns = self.applicationId;
+            if (!ns) ns = self.currentOrganization + "/" + self.applicationId;
         }
         var success = getByType("function", 0, arguments);
         var failure = getByType("function", 1, arguments);
@@ -994,7 +989,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
         if (path.lastIndexOf("/", 0) !== 0) {
             path = "/" + path;
         }
-        path = "/" + applicationId + path + "/indexes";
+        path = "/" + self.currentOrganization + "/" + applicationId + path + "/indexes";
         apiGetRequest(path, null, success, failure);
     }
     this.requestCollectionIndexes = requestCollectionIndexes;
@@ -1008,7 +1003,7 @@ usergrid.Client = function(applicationId, clientId, clientSecret) {
         if (path.lastIndexOf("/", 0) !== 0) {
             path = "/" + path;
         }
-        path = "/" + applicationId + path;
+        path = "/" + self.currentOrganization + "/" + applicationId + path;
 
         var client = self;
         var self = this;
