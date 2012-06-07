@@ -37,7 +37,7 @@ app.views.SettingsPanel = Ext.extend(Ext.form.FormPanel,{
 
     	var okButton = new Ext.Button({
     		ui: 'confirm',
-    		text: 'Save',
+    		text: 'Sign In',
     		handler: this.onOkAction,
     		scope:this
     	});
