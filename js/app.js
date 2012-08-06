@@ -124,7 +124,7 @@ $(document).ready(function () {
         fullActivityFeed.clearQueryObj();
         
         //now that we know who logged in, we can specify the user in their feed
-        userFeed.setPath('users/' + response.user.username + '/feed');
+        userFeed.setCollectionPath('users/' + response.user.username + '/feed');
 
         //default to the full feed view (all messages in the system)
         showFullFeed();
