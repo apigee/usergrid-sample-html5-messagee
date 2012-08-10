@@ -29,6 +29,8 @@
 $(document).ready(function () {
   //if the app was somehow loaded on another page, default to the login page
   window.location = "#page-login";
+  //a new user object
+  var appUser = new apigee.User();
   //a new Collection object that will be used to hold the full feed list
   var fullActivityFeed = new apigee.Collection("activities");
   //make sure messages are pulled back in order
@@ -59,6 +61,11 @@ $(document).ready(function () {
 
   $('#btn-update-account').bind('click', function() {
     updateUser();
+  });
+
+  $('#btn-close').bind('click', function() {
+    //turn the reload timer on
+    feedReloadTimer = window.setInterval( timerRefreshView, 30000 );
   });
 
   $('#btn-previous').bind('click', function() {
@@ -111,7 +118,7 @@ $(document).ready(function () {
     $('#login-section-error').html('');
     var username = $("#username").val();
     var password = $("#password").val();
-    apigee.ApiClient.loginAppUser(username, password,
+    appUser.login(username, password,
       function (response) {
         //login succeeded
         //clear out the login form so it is empty if the user chooses to log out
@@ -119,8 +126,8 @@ $(document).ready(function () {
         $("#password").val('');
 
         //reset the query on both the feed objects to make sure we get the first page of results
-        userFeed.clearQueryObj();
-        fullActivityFeed.clearQueryObj();
+        userFeed.clearQuery();
+        fullActivityFeed.clearQuery();
         
         //now that we know who logged in, we can specify the user in their feed
         userFeed.setCollectionPath('users/' + response.user.username + '/feed');
@@ -153,6 +160,9 @@ $(document).ready(function () {
    *  @return none
    */
   function pageUpdateAccount(){
+    //turn the reload timer off so we don't get interrupted during the update
+    window.clearInterval( feedReloadTimer );
+    
     $("#update-name").val(apigee.ApiClient.getAppUserFullName());
     $("#update-email").val(apigee.ApiClient.getAppUserEmail());
     $("#update-username").val(apigee.ApiClient.getAppUserUsername());
@@ -193,9 +203,9 @@ $(document).ready(function () {
          apigee.validation.validatePassword(password, function (){
           $("#new-password").focus();
           $("#new-password").addClass('error');})  ) {
-      var user = new apigee.User();
-      user.setData({"name":name,"username":username,"email":email,"password":password});
-      user.save(
+      appUser = new apigee.User(); //make sure we have a clean user, and then add the data
+      appUser.setData({"name":name,"username":username,"email":email,"password":password});
+      appUser.save(
         function () {
           //new user is created, so set their values in the login form and call login
           $("#username").val(username);
@@ -224,6 +234,7 @@ $(document).ready(function () {
    *  @return none
    */
   function updateUser() {
+
     $("#update-name").removeClass('error');
     $("#update-email").removeClass('error');
     $("#update-username").removeClass('error');
@@ -249,8 +260,8 @@ $(document).ready(function () {
         apigee.validation.validatePassword(newpassword, function (){
           $("#update-newpassword").focus();
           $("#update-newpassword").addClass('error');})  ) {
-
-      apigee.ApiClient.updateAppUser(apigee.ApiClient.getAppUserUUID(), name, email, username, oldpassword, newpassword, null,
+      appUser.setData({"name":name,"username":username,"email":email,"oldpassword":oldpassword, "newpassword":newpassword});
+      appUser.save(
         function () {
           $('#user-message-update-account').html('<strong>Your account was updated</strong>');
         },
@@ -294,7 +305,7 @@ $(document).ready(function () {
     $('#btn-show-my-feed').addClass('ui-btn-up-c');
 
     //reset the full feed object so when we view it again, we will get the latest feed
-    fullActivityFeed.clearQueryObj();
+    fullActivityFeed.clearQuery();
 
     //get the users feed
     userFeed.get(
@@ -461,8 +472,8 @@ $(document).ready(function () {
     }
 
     //reset the full feed object so when we view it again, we will get the latest feed
-    fullActivityFeed.clearQueryObj();
-    userFeed.clearQueryObj();
+    fullActivityFeed.clearQuery();
+    userFeed.clearQuery();
     apigee.ApiClient.runAppQuery(new apigee.QueryObj('POST', 'users/' + apigee.ApiClient.getAppUserUsername() + '/following/users/' + username, null, null,
       function() {
         $('#now-following-text').html('Congratulations! You are now following <strong>' + username + '</strong>');
@@ -520,11 +531,11 @@ $(document).ready(function () {
       function () {
         if (fullFeedView) {
           //reset the feed object so when we view it again, we will get the latest feed
-          fullActivityFeed.clearQueryObj();
+          fullActivityFeed.clearQuery();
           showFullFeed();
         } else {
           //reset the feed object so when we view it again, we will get the latest feed
-          userFeed.clearQueryObj();
+          userFeed.clearQuery();
           showMyFeed();
         }        
         window.location = "#page-messages-list";
@@ -578,19 +589,21 @@ $(document).ready(function () {
    *  @method feedReloadTimer
    *  @return none
    */
-  var feedReloadTimer = window.setInterval(
-    function(){
-      if (apigee.ApiClient.isLoggedInAppUser()) {
-        if (fullFeedView) {
-          showFullFeed();
-        } else {
-          showMyFeed();
-        }
+  var feedReloadTimer = window.setInterval( timerRefreshView, 30000 );
+
+  function timerRefreshView(){
+    if (apigee.ApiClient.isLoggedInAppUser()) {
+      if (fullFeedView) {
+        showFullFeed();
       } else {
-        window.location = "#page-login";
-        return;
+        showMyFeed();
       }
-    }, 30000 );
+    } else {
+      window.location = "#page-login";
+      return;
+    }
+  }
+
 });
 
 //abudda abudda abudda that's all folks!
