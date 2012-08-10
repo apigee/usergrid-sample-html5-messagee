@@ -25,8 +25,10 @@ window.console.log = window.console.log || function() {};
 //apigee namespace encapsulates this SDK
 window.apigee = window.apigee || {};
 apigee = apigee || {};
-apigee.SDK_VERSION = '0.9.1';
+apigee.SDK_VERSION = '0.9.2';
 
+apigee.M = 'ManagementQuery';
+apigee.A = 'ApplicationQuery';
 /*
  *  apigee.ApiClient
  *
@@ -42,10 +44,10 @@ apigee.SDK_VERSION = '0.9.1';
  *
  *  Main methods for making calls to the API are:
  *
- *  runAppQuery (queryObj)
- *  runManagementQuery(queryObj)
+ *  runAppQuery (Query)
+ *  runManagementQuery(Query)
  *
- *  Create a new apigee.QueryObject and then pass it to either of these
+ *  Create a new apigee.Query and then pass it to either of these
  *  two methods for making calls directly to the API.
  *
  *  Several convenience methods exist for making app user related calls easier.  These are:
@@ -60,7 +62,7 @@ apigee.SDK_VERSION = '0.9.1';
  */
 apigee.ApiClient = (function () {
   //API endpoint
-  var _apiUrl = "http://api.usergrid.com/";
+  var _apiUrl = "https://api.usergrid.com/";
   //var _apiUrl = "http://ug-developer-testing.elasticbeanstalk.com/";
   var _orgName = null;
   var _orgUUID = null;
@@ -70,6 +72,7 @@ apigee.ApiClient = (function () {
   var _appUserName = null;
   var _appUserEmail = null;
   var _appUserUUID = null;
+  var _queryType = null;
 
   /*
    *  A method to set up the ApiClient with orgname and appname
@@ -169,141 +172,204 @@ apigee.ApiClient = (function () {
   }
 
   /*
-    *  A public method to get the app user's username to be used by the client
-    *  @method getAppUserUsername
-    *  @public
-    *  @return {string} the app user's username
-    */
+   *  A public method to get the app user's username to be used by the client
+   *  @method getAppUserUsername
+   *  @public
+   *  @return {string} the app user's username
+   */
   function getAppUserUsername() {
     return _appUserUsername;
   }
 
   /*
-    *  A public method to set the app user's username to be used by the client
-    *  @method setAppUserUsername
-    *  @public
-    *  @param appUserUsername - the app user's username
-    *  @return none
-    */
+   *  A public method to set the app user's username to be used by the client
+   *  @method setAppUserUsername
+   *  @public
+   *  @param appUserUsername - the app user's username
+   *  @return none
+   */
   function setAppUserUsername(appUserUsername) {
     _appUserUsername = appUserUsername;
   }
 
   /*
-    *  method to get the app user's name to be used by the client
-    *  @method getAppUserName
-    *  @public
-    *  @return {string} the app user's name
-    */
+   *  method to get the app user's name to be used by the client
+   *  @method getAppUserName
+   *  @public
+   *  @return {string} the app user's name
+   */
   function getAppUserFullName() {
     return _appUserName;
   }
 
   /*
-    *  A public method to set the app user's name to be used by the client
-    *  @method setAppUserName
-    *  @public
-    *  @param appUserName - the app user's name
-    *  @return none
-    */
+   *  A public method to set the app user's name to be used by the client
+   *  @method setAppUserName
+   *  @public
+   *  @param appUserName - the app user's name
+   *  @return none
+   */
   function setAppUserFullName(appUserName) {
     _appUserName = appUserName;
   }
 
   /*
-    *  A public method to get the app user's email to be used by the client
-    *  @method getAppUserEmail
-    *  @public
-    *  @return {string} the app user's email
-    */
+   *  A public method to get the app user's email to be used by the client
+   *  @method getAppUserEmail
+   *  @public
+   *  @return {string} the app user's email
+   */
   function getAppUserEmail() {
     return _appUserEmail;
   }
 
   /*
-    *  A public method to set the app user's email to be used by the client
-    *  @method setAppUserEmail
-    *  @public
-    *  @param appUserEmail - the app user's email
-    *  @return none
-    */
+   *  A public method to set the app user's email to be used by the client
+   *  @method setAppUserEmail
+   *  @public
+   *  @param appUserEmail - the app user's email
+   *  @return none
+   */
   function setAppUserEmail(appUserEmail) {
     _appUserEmail = appUserEmail;
   }
 
   /*
-    *  A public method to get the app user's UUID to be used by the client
-    *  @method getAppUserUUID
-    *  @public
-    *  @return {string} the app users' UUID
-    */
+   *  A public method to get the app user's UUID to be used by the client
+   *  @method getAppUserUUID
+   *  @public
+   *  @return {string} the app users' UUID
+   */
   function getAppUserUUID() {
     return _appUserUUID;
   }
 
   /*
-    *  A public method to set the app user's UUID to be used by the client
-    *  @method setAppUserUUID
-    *  @public
-    *  @param appUserUUID - the app user's UUID
-    *  @return none
-    */
+   *  A public method to set the app user's UUID to be used by the client
+   *  @method setAppUserUUID
+   *  @public
+   *  @param appUserUUID - the app user's UUID
+   *  @return none
+   */
   function setAppUserUUID(appUserUUID) {
     _appUserUUID = appUserUUID;
   }
 
   /*
-  *  A public method to return the API URL
-  *  @method getApiUrl
-  *  @public
-  *  @return {string} the API url
-  */
+   *  A public method to return the API URL
+   *  @method getApiUrl
+   *  @public
+   *  @return {string} the API url
+   */
   function getApiUrl() {
     return _apiUrl
   }
 
   /*
-  *  A public method to overide the API url
-  *  @method setApiUrl
-  *  @public
-  *  @return none
-  */
+   *  A public method to overide the API url
+   *  @method setApiUrl
+   *  @public
+   *  @return none
+   */
   function setApiUrl(apiUrl) {
     _apiUrl = apiUrl;
   }
 
   /*
-  *  A public method to get the api url of the reset pasword endpoint
-  *  @method getResetPasswordUrl
-  *  @public
-  *  @return {string} the api rul of the reset password endpoint
-  */
+   *  A public method to get the api url of the reset pasword endpoint
+   *  @method getResetPasswordUrl
+   *  @public
+   *  @return {string} the api rul of the reset password endpoint
+   */
   function getResetPasswordUrl() {
-    this.getApiUrl() + "/management/users/resetpw"
+    getApiUrl() + "/management/users/resetpw"
+  }
+
+  /*
+   *  A private method to get the type of the current api call -
+   *  (Management or Application)
+   *  @method getQueryType
+   *  @private
+   *  @return {string} the call type
+   */
+  function getQueryType() {
+    return _queryType;
+  }
+  /*
+   *  A private method to set the type of the current api call -
+   *  (Management or Application)
+   *  @method setQueryType
+   *  @private
+   *  @param {string} call type
+   *  @return none
+   */
+  function setQueryType(type) {
+    _queryType = type;
+  }
+
+  /*
+   *  A public method to get the logout callback, which is called
+   *  when the token is found to be invalid
+   *  @method getLogoutCallback
+   *  @public
+   *  @return {string} the api rul of the reset password endpoint
+   */
+  function getLogoutCallback() {
+    return _logoutCallback;
+  }
+
+  /*
+   *  A public method to set the logout callback, which is called
+   *  when the token is found to be invalid
+   *  @method setLogoutCallback
+   *  @public
+   *  @param {function} logoutCallback
+   *  @return none
+   */
+  function setLogoutCallback(logoutCallback) {
+    _logoutCallback = logoutCallback
+  }
+
+  /*
+   *  A public method to call the logout callback, which is called
+   *  when the token is found to be invalid
+   *  @method callLogoutCallback
+   *  @public
+   *  @return none
+   */
+  function callLogoutCallback() {
+    if (_logoutCallback && typeof(_logoutCallback ) == "function") {
+      _logoutCallback();
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /*
   *  A public method to run calls against the app endpoint
   *  @method runAppQuery
   *  @public
-  *  @params {object} apigee.QueryObj - {method, path, jsonObj, params, successCallback, failureCallback}
+  *  @params {object} apigee.Query - {method, path, jsonObj, params, successCallback, failureCallback}
   *  @return none
   */
-  function runAppQuery (QueryObj) {
+  function runAppQuery (Query) {
     var endpoint = "/" + this.getOrganizationName() + "/" + this.getApplicationName() + "/";
-    processQuery(QueryObj, endpoint, self);
+    setQueryType(apigee.A);
+    processQuery(Query, endpoint, self);
   }
 
   /*
   *  A public method to run calls against the management endpoint
   *  @method runManagementQuery
   *  @public
-  *  @params {object} apigee.QueryObj - {method, path, jsonObj, params, successCallback, failureCallback}
+  *  @params {object} apigee.Query - {method, path, jsonObj, params, successCallback, failureCallback}
   *  @return none
   */
-  function runManagementQuery (QueryObj) {
+  function runManagementQuery (Query) {
     var endpoint = "/management/";
-    processQuery(QueryObj, endpoint, self)
+    setQueryType(apigee.M);
+    processQuery(Query, endpoint, self)
   }
 
   /*
@@ -319,7 +385,7 @@ apigee.ApiClient = (function () {
   function loginAppUser (username, password, successCallback, failureCallback) {
     var self = this;
     var data = {"username": username, "password": password, "grant_type": "password"};
-    this.runAppQuery(new apigee.QueryObj('GET', 'token', null, data,
+    this.runAppQuery(new apigee.Query('GET', 'token', null, data,
       function (response) {
         self.setAppUserUsername(response.user.username);
         self.setAppUserFullName(response.user.name);
@@ -368,7 +434,7 @@ apigee.ApiClient = (function () {
     //Note: we have ticket in to change PUT calls to /users to accept the password change
     //      once that is done, we will remove this call and merge it all into one
     if (oldpassword && newpassword) {
-      this.runAppQuery(new apigee.QueryObj('PUT', 'users/'+uuid+'/password', pwdata, null,
+      this.runAppQuery(new apigee.Query('PUT', 'users/'+uuid+'/password', pwdata, null,
         function (response) {
 
         },
@@ -377,7 +443,7 @@ apigee.ApiClient = (function () {
         }
       ));
     }
-    this.runAppQuery(new apigee.QueryObj('PUT', 'users/'+uuid+'', data, null,
+    this.runAppQuery(new apigee.Query('PUT', 'users/'+uuid+'', data, null,
       function (response) {
         var user = response.entities[0];
         self.setAppUserUsername(user.username);
@@ -416,7 +482,7 @@ apigee.ApiClient = (function () {
     data.password = password;
     data.email = email;
     data.name = name;
-    this.runAppQuery(new apigee.QueryObj('POST', 'users', data, null,
+    this.runAppQuery(new apigee.Query('POST', 'users', data, null,
       function (response) {
         var user = response.entities[0];
         self.setAppUserUsername(user.username);
@@ -464,7 +530,7 @@ apigee.ApiClient = (function () {
    *  but rather that one exists, and that there is a valid UUID
    *  @method isLoggedInAppUser
    *  @public
-   *  @params {object} apigee.QueryObj - {method, path, jsonObj, params, successCallback, failureCallback}
+   *  @params {object} apigee.Query - {method, path, jsonObj, params, successCallback, failureCallback}
    *  @return {boolean} Returns true the user is logged in (has token and uuid), false if not
    */
   function isLoggedInAppUser() {
@@ -506,34 +572,30 @@ apigee.ApiClient = (function () {
     }
     return tail.join("&");
   }
-  
+
   /**
    *  A private method to validate, prepare,, and make the calls to the API
    *  Use runAppQuery or runManagementQuery to make your calls!
-   *  
+   *
    *  @method processQuery
    *  @private
-   *  @params {object} apigee.QueryObj - {method, path, jsonObj, params, successCallback, failureCallback}
+   *  @params {object} apigee.Query - {method, path, jsonObj, params, successCallback, failureCallback}
    *  @params {string} endpoint - used to differentiate between management and app queries
    *  @return {response} callback functions return API response object
    */
-  function processQuery (QueryObj, endpoint) {
+  function processQuery (Query, endpoint) {
     var curl = "curl";
     //validate parameters
     try {
-      //verify that the current rendering platform supports XMLHttpRequest
-      if(typeof XMLHttpRequest === 'undefined') {
-        throw(new Error('Ru-rho! XMLHttpRequest is not supported on this device.'));
-      }
       //verify that the query object is valid
-      if(!(QueryObj instanceof apigee.QueryObj)) {
-        throw(new Error('QueryObj is not a valid object.'));
+      if(!(Query instanceof apigee.Query)) {
+        throw(new Error('Query is not a valid object.'));
       }
       //peel the data out of the query object
-      var method = QueryObj.getMethod().toUpperCase();
-      var path = QueryObj.getPath();
-      var jsonObj = QueryObj.getJsonObj() || {};
-      var params = QueryObj.getQueryParams() || {};
+      var method = Query.getMethod().toUpperCase();
+      var path = Query.getPath();
+      var jsonObj = Query.getJsonObj() || {};
+      var params = Query.getQueryParams() || {};
 
       //method - should be GET, POST, PUT, or DELETE only
       if (method != 'GET' && method != 'POST' && method != 'PUT' && method != 'DELETE') {
@@ -550,9 +612,10 @@ apigee.ApiClient = (function () {
       if (application_name) {
         application_name = application_name.toUpperCase();
       }
-      if (application_name != 'SANDBOX' && apigee.ApiClient.getToken()) {
+      //if (application_name != 'SANDBOX' && apigee.ApiClient.getToken()) {
+      if ( (application_name != 'SANDBOX' && apigee.ApiClient.getToken()) || (getQueryType() == apigee.M && apigee.ApiClient.getToken())) {
         curl += ' -i -H "Authorization: Bearer ' + apigee.ApiClient.getToken() + '"';
-        QueryObj.setToken(true);
+        Query.setToken(true);
       }
 
       //params - make sure we have a valid json object
@@ -562,8 +625,8 @@ apigee.ApiClient = (function () {
       }
 
       //add in the cursor if one is available
-      if (QueryObj.getCursor()) {
-        params.cursor = QueryObj.getCursor();
+      if (Query.getCursor()) {
+        params.cursor = Query.getCursor();
       } else {
         delete params.cursor;
       }
@@ -626,7 +689,7 @@ apigee.ApiClient = (function () {
     //log the curl command to the console
     console.log(curl);
     //store the curl command back in the object
-    QueryObj.setCurl(curl);
+    Query.setCurl(curl);
 
     //so far so good, so run the query
     var xD = window.XDomainRequest ? true : false;
@@ -636,7 +699,7 @@ apigee.ApiClient = (function () {
     if(xD)
     {
       xhr = new window.XDomainRequest();
-      if (application_name != 'SANDBOX' && apigee.ApiClient.getToken()) {
+      if ( (application_name != 'SANDBOX' && apigee.ApiClient.getToken()) || (getQueryType() == apigee.M && apigee.ApiClient.getToken())) {
         if (path.indexOf("?")) {
           path += '&access_token='+apigee.ApiClient.getToken();
         } else {
@@ -649,13 +712,13 @@ apigee.ApiClient = (function () {
     {
       xhr = new XMLHttpRequest();
       xhr.open(method, path, true);
-      if (application_name != 'SANDBOX' && apigee.ApiClient.getToken()) {
+      if ( (application_name != 'SANDBOX' && apigee.ApiClient.getToken()) || (getQueryType() == apigee.M && apigee.ApiClient.getToken())) {
         xhr.setRequestHeader("Authorization", "Bearer " + apigee.ApiClient.getToken());
         xhr.withCredentials = true;
       }
     } else {
       xhr = new ActiveXObject("MSXML2.XMLHTTP.3.0");
-      if (application_name != 'SANDBOX' && apigee.ApiClient.getToken()) {
+      if ( (application_name != 'SANDBOX' && apigee.ApiClient.getToken()) || (getQueryType() == apigee.M && apigee.ApiClient.getToken())) {
         if (path.indexOf("?")) {
           path += '&access_token='+apigee.ApiClient.getToken();
         } else {
@@ -670,7 +733,7 @@ apigee.ApiClient = (function () {
       //network error
       clearTimeout(timeout);
       console.log('API call failed at the network level.');
-      QueryObj.callFailureCallback({'error':'error'});
+      Query.callFailureCallback({'error':'error'});
     };
     xhr.onload = function() {
       //call completed
@@ -685,22 +748,24 @@ apigee.ApiClient = (function () {
               (error.type == "auth_missing_credentials")   ||
               (error.type == "auth_invalid")) {
             //this error type means the user is not authorized. If a logout function is defined, call it
+            callLogoutCallback();
+            /*
             if (apigee.console.logout) {
               apigee.console.logout();
               return;
-            }
+            }*/
         }
         //otherwise, just call the failure callback
-        QueryObj.callFailureCallback(response);
+        Query.callFailureCallback(response);
         return;
       } else {
         //success
 
         //query completed succesfully, so store cursor
         var cursor = response.cursor || null;
-        QueryObj.saveCursor(cursor);
+        Query.saveCursor(cursor);
         //then call the original callback
-        QueryObj.callSuccessCallback(response);
+        Query.callSuccessCallback(response);
       }
     };
     var timeout = setTimeout(function() { xhr.abort(); }, 10000);
@@ -732,6 +797,9 @@ apigee.ApiClient = (function () {
     runAppQuery:runAppQuery,
     runManagementQuery:runManagementQuery,
     loginAppUser:loginAppUser,
+    getLogoutCallback:getLogoutCallback,
+    setLogoutCallback:setLogoutCallback,
+    callLogoutCallback:callLogoutCallback,
     createAppUser:createAppUser,
     updateAppUser:updateAppUser,
     renewAppUserToken:renewAppUserToken,
@@ -981,27 +1049,27 @@ apigee.validation = (function () {
 
 
 /**
- *  apigee.QueryObj is a class for holding all query information and paging state
+ *  apigee.Query is a class for holding all query information and paging state
  *
  *  The goal of the query object is to make it easy to run any
  *  kind of CRUD call against the API.  This is done as follows:
  *
  *  1. Create a query object:
- *     queryObj = new apigee.QueryObj("GET", "users", null, function() { alert("success"); }, function() { alert("failure"); });
+ *     Query = new apigee.Query("GET", "users", null, function() { alert("success"); }, function() { alert("failure"); });
  *
  *  2. Run the query by calling the appropriate endpoint call
- *     runAppQuery(queryObj);
+ *     runAppQuery(Query);
  *     or
- *     runManagementQuery(queryObj);
+ *     runManagementQuery(Query);
  *
- *  3. Paging - The apigee.QueryObj holds the cursor information.  To
+ *  3. Paging - The apigee.Query holds the cursor information.  To
  *     use, simply bind click events to functions that call the
  *     getNext and getPrevious methods of the query object.  This
  *     will set the cursor correctly, and the runAppQuery method
- *     can be called again using the same apigee.QueryObj:
- *     runAppQuery(queryObj);
+ *     can be called again using the same apigee.Query:
+ *     runAppQuery(Query);
  *
- *  @class apigee.QueryObj
+ *  @class apigee.Query
  *  @param method REQUIRED - GET, POST, PUT, DELETE
  *  @param path REQUIRED - API resource (e.g. "users" or "users/rod", should not include http URL or org_name/app_name)
  *  @param jsonObj NULLABLE - a json data object to be passed to the API
@@ -1016,7 +1084,7 @@ apigee.validation = (function () {
  *  }
  *  </pre>
  *
- *  @class QueryObj
+ *  @class Query
  *  @author Rod Simpson (rod@apigee.com)
  */
 
@@ -1031,7 +1099,7 @@ apigee.validation = (function () {
    *  @param {function} successCallback
    *  @param {function} failureCallback
    */
-  apigee.QueryObj = function(method, path, jsonObj, paramsObj, successCallback, failureCallback) {
+  apigee.Query = function(method, path, jsonObj, paramsObj, successCallback, failureCallback) {
     //query vars
     this._method = method;
     this._path = path;
@@ -1050,9 +1118,9 @@ apigee.validation = (function () {
     this._previous = [];
   };
 
-  apigee.QueryObj.prototype = {
+  apigee.Query.prototype = {
     /**
-     *  A method to set all settable parameters of the QueryObj at one time
+     *  A method to set all settable parameters of the Query at one time
      *  @public
      *  @method validateUsername
      *  @param {string} method
@@ -1413,7 +1481,7 @@ apigee.validation = (function () {
     this._uuid = uuid;
   };
 
-  apigee.Entity.prototype = new apigee.QueryObj();
+  apigee.Entity.prototype = new apigee.Query();
 
   /**
    *  gets the current Entity type
@@ -1581,7 +1649,7 @@ apigee.validation = (function () {
     var self = this;
     this.setAllQueryParams(method, path, this.getData(), null,
       function(response) {
-        if (self.processResponse(self, response)){
+        if (processResponse(self, response)){
           if (typeof(successCallback) == "function"){
             successCallback(response);
           }
@@ -1639,7 +1707,7 @@ apigee.validation = (function () {
     var self = this;
     this.setAllQueryParams('GET', path, null, null,
       function(response) {
-        if (self.processResponse(self, response)){
+        if (processResponse(self, response)){
           if (typeof(successCallback) == "function"){
             successCallback(response);
           }
@@ -1724,7 +1792,7 @@ apigee.validation = (function () {
     }
     return false;
   }
-  
+
 })(apigee);
 
 
@@ -1847,11 +1915,11 @@ apigee.validation = (function () {
     this._collectionPath = collectionPath;
     this._uuid = uuid;
     this._list = [];
-    this._queryObj = new apigee.QueryObj();
+    this._Query = new apigee.Query();
     this._iterator = -1; //first thing we do is increment, so set to -1
   };
 
-  apigee.Collection.prototype = new apigee.QueryObj();
+  apigee.Collection.prototype = new apigee.Query();
 
   /**
    *  gets the current Collection path
@@ -2146,11 +2214,11 @@ apigee.validation = (function () {
   /**
    *  clears the query parameters object
    *
-   *  @method clearQueryObj
+   *  @method clearQuery
    *  @return none
    *
    */
-  apigee.Collection.prototype.clearQueryObj = function (){
+  apigee.Collection.prototype.clearQuery = function (){
     this.clearAll();
   }
 

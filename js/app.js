@@ -111,7 +111,6 @@ $(document).ready(function () {
     $('#login-section-error').html('');
     var username = $("#username").val();
     var password = $("#password").val();
-    var self = this;
     apigee.ApiClient.loginAppUser(username, password,
       function (response) {
         //login succeeded
@@ -194,8 +193,9 @@ $(document).ready(function () {
          apigee.validation.validatePassword(password, function (){
           $("#new-password").focus();
           $("#new-password").addClass('error');})  ) {
-
-      apigee.ApiClient.createAppUser(name, email, username, password, null,
+      var user = new apigee.User();
+      user.setData({"name":name,"username":username,"email":email,"password":password});
+      user.save(
         function () {
           //new user is created, so set their values in the login form and call login
           $("#username").val(username);
