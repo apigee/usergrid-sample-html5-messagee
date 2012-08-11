@@ -474,7 +474,7 @@ $(document).ready(function () {
     //reset the full feed object so when we view it again, we will get the latest feed
     fullActivityFeed.clearQuery();
     userFeed.clearQuery();
-    apigee.ApiClient.runAppQuery(new apigee.QueryObj('POST', 'users/' + apigee.ApiClient.getAppUserUsername() + '/following/users/' + username, null, null,
+    apigee.ApiClient.runAppQuery(new apigee.Query('POST', 'users/' + apigee.ApiClient.getAppUserUsername() + '/following/users/' + username, null, null,
       function() {
         $('#now-following-text').html('Congratulations! You are now following <strong>' + username + '</strong>');
         showMyFeed();
