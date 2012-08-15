@@ -1,9 +1,9 @@
 /**
- *  Messagee is a sample twitter-type app that is powered by Apigee
- *  Usergrid.  This app shows how to use the Apigee SDK to connect
+ *  Messagee is a sample twitter-type app that is powered by Usergrid
+ *  Usergrid.  This app shows how to use the Usergrid SDK to connect
  *  to Usergrid, and how to store and retrieve data using Collections.
  *
- *  Learn more at http://apigee.com/docs
+ *  Learn more at http://Usergrid.com/docs
  *
  *   Copyright 2012 Apigee Corporation
  *
@@ -30,15 +30,15 @@ $(document).ready(function () {
   //if the app was somehow loaded on another page, default to the login page
   window.location = "#page-login";
   //a new user object
-  var appUser = new apigee.User();
+  var appUser = new Usergrid.Entity('user');
   //a new Collection object that will be used to hold the full feed list
-  var fullActivityFeed = new apigee.Collection("activities");
+  var fullActivityFeed = new Usergrid.Collection("activities");
   //make sure messages are pulled back in order
   fullActivityFeed.setQueryParams({"ql":"order by created desc"});
   //default to full feed view
   var fullFeedView = true;
   //a new Collection object that will be used to hold the user's feed
-  var userFeed = new apigee.Collection();
+  var userFeed = new Usergrid.Collection();
   //make sure messages are pulled back in order
   userFeed.setQueryParams({"ql":"order by created desc"});
 
@@ -103,7 +103,7 @@ $(document).ready(function () {
 
   /**
    *  function to log in the app user.  The API returns a token,
-   *  which is stored in apigee.ApiClient and used for all future
+   *  which is stored in Usergrid.ApiClient and used for all future
    *  calls.  We pass 2 callback functions, the first is called
    *  in the event of a succesful call to the API.  The second is
    *  called when there was an error.
@@ -118,9 +118,10 @@ $(document).ready(function () {
     $('#login-section-error').html('');
     var username = $("#username").val();
     var password = $("#password").val();
-    appUser.login(username, password,
-      function (response) {
+    Usergrid.ApiClient.logInAppUser(username, password,
+      function (response, user) {
         //login succeeded
+        appUser = Usergrid.ApiClient.getLoggedInUser();
         //clear out the login form so it is empty if the user chooses to log out
         $("#username").val('');
         $("#password").val('');
@@ -148,7 +149,7 @@ $(document).ready(function () {
    * @return none
    */
   function logout() {
-    apigee.ApiClient.logoutAppUser();
+    Usergrid.ApiClient.logoutAppUser();
     window.location = "#page-login";
   }
 
@@ -163,9 +164,9 @@ $(document).ready(function () {
     //turn the reload timer off so we don't get interrupted during the update
     window.clearInterval( feedReloadTimer );
     
-    $("#update-name").val(apigee.ApiClient.getAppUserFullName());
-    $("#update-email").val(apigee.ApiClient.getAppUserEmail());
-    $("#update-username").val(apigee.ApiClient.getAppUserUsername());
+    $("#update-name").val(appUser.get('name'));
+    $("#update-email").val(appUser.get('email'));
+    $("#update-username").val(appUser.get('username'));
   }
 
   /**
@@ -191,20 +192,20 @@ $(document).ready(function () {
     var username = $("#new-username").val();
     var password = $("#new-password").val();
 
-    if (apigee.validation.validateName(name, function (){
+    if (Usergrid.validation.validateName(name, function (){
           $("#new-name").focus();
           $("#new-name").addClass('error');}) &&
-        apigee.validation.validateEmail(email, function (){
+        Usergrid.validation.validateEmail(email, function (){
           $("#new-email").focus();
           $("#new-email").addClass('error');})  &&
-        apigee.validation.validateUsername(username, function (){
+        Usergrid.validation.validateUsername(username, function (){
           $("#new-username").focus();
           $("#new-username").addClass('error');})  &&
-         apigee.validation.validatePassword(password, function (){
+         Usergrid.validation.validatePassword(password, function (){
           $("#new-password").focus();
           $("#new-password").addClass('error');})  ) {
-      appUser = new apigee.User(); //make sure we have a clean user, and then add the data
-      appUser.setData({"name":name,"username":username,"email":email,"password":password});
+      appUser = new Usergrid.User(); //make sure we have a clean user, and then add the data
+      appUser.set({"name":name,"username":username,"email":email,"password":password});
       appUser.save(
         function () {
           //new user is created, so set their values in the login form and call login
@@ -247,22 +248,23 @@ $(document).ready(function () {
     var oldpassword = $("#update-oldpassword").val();
     var newpassword = $("#update-newpassword").val();
 
-    if (apigee.validation.validateName(name, function (){
+    if (Usergrid.validation.validateName(name, function (){
           $("#update-name").focus();
           $("#update-name").addClass('error');}) &&
-        apigee.validation.validateEmail(email, function (){
+        Usergrid.validation.validateEmail(email, function (){
           $("#update-email").focus();
           $("#update-email").addClass('error');})  &&
-        apigee.validation.validateUsername(username, function (){
+        Usergrid.validation.validateUsername(username, function (){
           $("#update-username").focus();
           $("#update-username").addClass('error');})  &&
         (newpassword == '') ||
-        apigee.validation.validatePassword(newpassword, function (){
+        Usergrid.validation.validatePassword(newpassword, function (){
           $("#update-newpassword").focus();
           $("#update-newpassword").addClass('error');})  ) {
-      appUser.setData({"name":name,"username":username,"email":email,"oldpassword":oldpassword, "newpassword":newpassword});
+      appUser.set({"name":name,"username":username,"email":email,"oldpassword":oldpassword, "newpassword":newpassword});
       appUser.save(
         function () {
+          appUser = Usergrid.ApiClient.getLoggedInUser();
           $('#user-message-update-account').html('<strong>Your account was updated</strong>');
         },
         function () {
@@ -293,7 +295,7 @@ $(document).ready(function () {
    *  @return none
    */
   function showMyFeed() {
-    if (!apigee.ApiClient.isLoggedInAppUser()) {
+    if (!Usergrid.ApiClient.isLoggedInAppUser()) {
       window.location = "#page-login";
       return;
     }
@@ -348,7 +350,7 @@ $(document).ready(function () {
    *  @return none
    */
   function showFullFeed() {
-    if (!apigee.ApiClient.isLoggedInAppUser()) {
+    if (!Usergrid.ApiClient.isLoggedInAppUser()) {
       window.location = "#page-login";
       return;
     }
@@ -398,9 +400,9 @@ $(document).ready(function () {
     while(feed.hasNextEntity()) {
       var message = feed.getNextEntity();
       //var message = messages[i];
-      var created = message.getField('created');
-      var content = message.getField('content');
-      var actor = message.getField('actor');
+      var created = message.get('created');
+      var content = message.get('content');
+      var actor = message.get('actor');
       var name = actor.displayName;
       if (!name) { name = 'Anonymous'; }
       var username = actor.displayName;
@@ -430,7 +432,7 @@ $(document).ready(function () {
       html += '<div style="border-bottom: 1px solid #444; padding: 5px; min-height: 60px;"><img src="' + imageUrl + '" style="border none; height: 50px; width: 50px; float: left;padding-right: 10px"> ';
       html += '<span style="float: right">'+formattedTime+'</span>';
       html += '<strong>' + name + '</strong>';
-      if (username && username != apigee.ApiClient.getAppUserUsername()) {
+      if (username && username != appUser.get('username')) {
         html += '(<a href="#page-now-following" id="'+created+'" name="'+username+'" data-role="button" data-rel="dialog" data-transition="fade">Follow</a>)';
       }
       html += '<br><span>' + content + '</span> <br>';
@@ -466,7 +468,7 @@ $(document).ready(function () {
    *
    */
   function followUser(username) {
-    if (!apigee.ApiClient.isLoggedInAppUser()) {
+    if (!Usergrid.ApiClient.isLoggedInAppUser()) {
       window.location = "#page-login";
       return false;
     }
@@ -474,7 +476,8 @@ $(document).ready(function () {
     //reset the full feed object so when we view it again, we will get the latest feed
     fullActivityFeed.clearQuery();
     userFeed.clearQuery();
-    apigee.ApiClient.runAppQuery(new apigee.Query('POST', 'users/' + apigee.ApiClient.getAppUserUsername() + '/following/users/' + username, null, null,
+    appUser = Usergrid.ApiClient.getLoggedInUser();
+    Usergrid.ApiClient.runAppQuery(new Usergrid.Query('POST', 'users/' + appUser.get('username') + '/following/users/' + username, null, null,
       function() {
         $('#now-following-text').html('Congratulations! You are now following <strong>' + username + '</strong>');
         showMyFeed();
@@ -502,31 +505,32 @@ $(document).ready(function () {
    *  @return none
    */
   function postMessage() {
-    if (!apigee.ApiClient.isLoggedInAppUser()) {
+    if (!Usergrid.ApiClient.isLoggedInAppUser()) {
       window.location = "#page-login";
       return false;
     }
+    appUser = Usergrid.ApiClient.getLoggedInUser();
     var content = $("#content").val();
     var actor =
     {"actor" : {
-      "displayName" : apigee.ApiClient.getAppUserUsername(), //getAppUserFullName(),
-      "uuid" : apigee.ApiClient.getAppUserUUID(),
-      "username" : apigee.ApiClient.getAppUserUsername(),
+      "displayName" : appUser.get('username'),
+      "uuid" : appUser.get('uuid'),
+      "username" : appUser.get('username'),
       "image" : {
         "duration" : 0,
         "height" : 80,
         "url" : "http://www.gravatar.com/avatar/",
         "width" : 80
       },
-      "email" : apigee.ApiClient.getAppUserEmail()
+      "email" : appUser.get('email')
     },
     "verb" : "post",
     "content" : content,
     "lat" : 48.856614,
     "lon" : 2.352222};
 
-    var message = new apigee.Entity('users/'+apigee.ApiClient.getAppUserUsername()+'/activities');
-    message.setData(actor);
+    var message = new Usergrid.Entity('users/'+appUser.get('username')+'/activities');
+    message.set(actor);
     message.save(
       function () {
         if (fullFeedView) {
@@ -592,7 +596,7 @@ $(document).ready(function () {
   var feedReloadTimer = window.setInterval( timerRefreshView, 30000 );
 
   function timerRefreshView(){
-    if (apigee.ApiClient.isLoggedInAppUser()) {
+    if (Usergrid.ApiClient.isLoggedInAppUser()) {
       if (fullFeedView) {
         showFullFeed();
       } else {
