@@ -535,6 +535,7 @@ $(document).ready(function () {
     message.set(actor);
     message.save(
       function () {
+        feedReloadTimer = window.setInterval( timerRefreshView, 30000 );
         if (fullFeedView) {
           //reset the feed object so when we view it again, we will get the latest feed
           fullActivityFeed.clearQuery();
