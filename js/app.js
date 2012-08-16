@@ -95,6 +95,8 @@ $(document).ready(function () {
   $('#btn-show-create-message').bind('click', function() {;
     $("#content").val('');
     $("#content").focus();
+    //turn the reload timer off so we don't get interrupted during the update
+    window.clearInterval( feedReloadTimer );
   });
 
   $('#post-message').bind('click', function() {
