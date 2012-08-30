@@ -1707,6 +1707,9 @@ Usergrid.ApiClient = (function () {
             //this error type means the user is not authorized. If a logout function is defined, call it
             callLogoutCallback();
             return;
+        } else {
+           Query.callFailureCallback();
+           return;
         }
       }
       //response looks good
