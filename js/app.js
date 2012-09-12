@@ -206,7 +206,7 @@ $(document).ready(function () {
          Usergrid.validation.validatePassword(password, function (){
           $("#new-password").focus();
           $("#new-password").addClass('error');})  ) {
-      appUser = new Usergrid.User(); //make sure we have a clean user, and then add the data
+      appUser = new Usergrid.Entity('user'); //make sure we have a clean user, and then add the data
       appUser.set({"name":name,"username":username,"email":email,"password":password});
       appUser.save(
         function () {
