@@ -599,7 +599,7 @@ $(document).ready(function () {
   var feedReloadTimer = window.setInterval( timerRefreshView, 30000 );
 
   function timerRefreshView(){
-    if (Usergrid.ApiClient.isLoggedInAppUser()) {
+    /* if (Usergrid.ApiClient.isLoggedInAppUser()) {
       if (fullFeedView) {
         showFullFeed();
       } else {
@@ -608,7 +608,8 @@ $(document).ready(function () {
     } else {
       window.location = "#page-login";
       return;
-    }
+    } */
+    return;
   }
 
 });
