@@ -38,7 +38,7 @@ $(document).ready(function () {
   //default to full feed view
   var fullFeedView = true;
   //a new Collection object that will be used to hold the user's feed
-  var userFeed = new Usergrid.Collection();
+  var userFeed = new Usergrid.Collection('users/me/feed');
   //make sure messages are pulled back in order
   userFeed.setQueryParams({"ql":"order by created desc"});
 
@@ -131,9 +131,6 @@ $(document).ready(function () {
         //reset the query on both the feed objects to make sure we get the first page of results
         userFeed.clearQuery();
         fullActivityFeed.clearQuery();
-        
-        //now that we know who logged in, we can specify the user in their feed
-        userFeed.setPath('users/' + response.user.username + '/feed');
 
         //default to the full feed view (all messages in the system)
         showFullFeed();
