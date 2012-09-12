@@ -244,9 +244,12 @@ $(document).ready(function () {
     var name        = $("#update-name").val();
     var email       = $("#update-email").val();
     var username    = $("#update-username").val();
-    var oldpassword = $("#update-oldpassword").val();
-    var newpassword = $("#update-newpassword").val();
-
+    var oldpassword = '';
+    var newpassword = '';
+    if (username != "testuser") {
+      var oldpassword = $("#update-oldpassword").val();
+      var newpassword = $("#update-newpassword").val();
+    }
     if (Usergrid.validation.validateName(name, function (){
           $("#update-name").focus();
           $("#update-name").addClass('error');}) &&
@@ -398,7 +401,6 @@ $(document).ready(function () {
     feed.resetEntityPointer();
     while(feed.hasNextEntity()) {
       var message = feed.getNextEntity();
-      //var message = messages[i];
       var created = message.get('created');
       var content = message.get('content');
       var actor = message.get('actor');
