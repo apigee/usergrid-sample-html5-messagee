@@ -481,7 +481,7 @@ $(document).ready(function () {
     Usergrid.ApiClient.runAppQuery(new Usergrid.Query('POST', 'users/' + appUser.get('username') + '/following/users/' + username, null, null,
       function() {
         $('#now-following-text').html('Congratulations! You are now following <strong>' + username + '</strong>');
-        showMyFeed();
+        //showMyFeed();
       },
       function() {
         $('#now-following-text').html('Aw Shucks!  There was a problem trying to follow <strong>' + username + '</strong>');
