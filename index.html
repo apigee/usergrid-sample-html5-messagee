@@ -10,10 +10,14 @@
         <script src="js/app.js" type="text/javascript"></script>
         <script src="js/usergrid.appSDK.js" type="text/javascript"></script>
         <script type="text/javascript">
-
-            //first set the org / app path
-            Usergrid.ApiClient.init('Apigee', 'messageeapp'); //<== update this line (organization name, application name)
-
+          try {
+            // first, set the org and app path.
+            Usergrid.ApiClient.init('Apigee', 'messageeapp');
+          }
+          catch (e) {
+            $('#login-section-error')
+              .html('There was an error initializing: ' + JSON.stringify(e));
+          }
         </script>
     </head>
     <body>
@@ -26,7 +30,7 @@
             <h3>Messagee is a sample messaging app, like Twitter</h3>
             <p>
               <h4>Log in using your Messagee account.</h4>
-              Don't have an account? use our test account (username: testuser / password: testuser), or create a new one!
+              Don&apos;t have an account? use our test account (username: testuser / password: testuser), or create a new one!
             </p>
             <span id="login-section-error"></span>
             <form name="form-login" id="form-login">
