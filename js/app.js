@@ -43,25 +43,11 @@ $(document).ready(function () {
   userFeed.setQueryParams({"ql":"order by created desc"});
 
   //bind the various click events
-  $('#btn-login').bind('click', function() {
-    login();
-  });
-
-  $('#btn-show-page-update-account').bind('click', function() {
-     pageUpdateAccount();
-  });
-
-  $('#btn-logout').bind('click', function() {
-    logout();
-  });
-
-  $('#btn-create-new-account').bind('click', function() {
-    createNewUser();
-  });
-
-  $('#btn-update-account').bind('click', function() {
-    updateUser();
-  });
+  $('#btn-login').bind('click', login);
+  $('#btn-show-page-update-account').bind('click', pageUpdateAccount);
+  $('#btn-logout').bind('click', logout);
+  $('#btn-create-new-account').bind('click', createNewUser);
+  $('#btn-update-account').bind('click', updateUser);
 
   $('#btn-close').bind('click', function() {
     //turn the reload timer on
@@ -84,13 +70,8 @@ $(document).ready(function () {
     }
   });
 
-  $('#btn-show-my-feed').bind('click', function() {
-    showMyFeed();
-  });
-
-  $('#btn-show-full-feed').bind('click', function() {
-    showFullFeed();
-  });
+  $('#btn-show-my-feed').bind('click', showMyFeed);
+  $('#btn-show-full-feed').bind('click', showFullFeed);
 
   $('#btn-show-create-message').bind('click', function() {;
     $("#content").val('');
@@ -99,9 +80,7 @@ $(document).ready(function () {
     window.clearInterval( feedReloadTimer );
   });
 
-  $('#post-message').bind('click', function() {
-    postMessage();
-  });
+  $('#post-message').bind('click', postMessage);
 
   /**
    *  function to log in the app user.  The API returns a token,
@@ -162,7 +141,7 @@ $(document).ready(function () {
   function pageUpdateAccount(){
     //turn the reload timer off so we don't get interrupted during the update
     window.clearInterval( feedReloadTimer );
-    
+
     $("#update-name").val(appUser.get('name'));
     $("#update-email").val(appUser.get('email'));
     $("#update-username").val(appUser.get('username'));
@@ -186,10 +165,10 @@ $(document).ready(function () {
     $("#new-username").removeClass('error');
     $("#new-password").removeClass('error');
 
-    var name     = $("#new-name").val();
-    var email    = $("#new-email").val();
-    var username = $("#new-username").val();
-    var password = $("#new-password").val();
+    var name     = $("#new-name").val(),
+        email    = $("#new-email").val(),
+        username = $("#new-username").val(),
+        password = $("#new-password").val();
 
     if (Usergrid.validation.validateName(name, function (){
           $("#new-name").focus();
@@ -202,8 +181,9 @@ $(document).ready(function () {
           $("#new-username").addClass('error');})  &&
          Usergrid.validation.validatePassword(password, function (){
           $("#new-password").focus();
-          $("#new-password").addClass('error');})  ) {
-      appUser = new Usergrid.Entity('users'); //make sure we have a clean user, and then add the data
+           $("#new-password").addClass('error');})  ) {
+      // make sure we have a clean user, and then add the data
+      appUser = new Usergrid.Entity('users');
       appUser.set({"name":name,"username":username,"email":email,"password":password});
       appUser.save(
         function () {
@@ -217,7 +197,8 @@ $(document).ready(function () {
           $('#login-section-error').html('There was an error creating the new user.');
         }
       );
-    } else {
+    }
+      else {
 
     }
   }
@@ -274,7 +255,7 @@ $(document).ready(function () {
            $('#user-message-update-account').html('<strong>There was an error updating your account</strong>');
         }
       );
-    } 
+    }
   }
 
   /**
@@ -326,7 +307,7 @@ $(document).ready(function () {
           $("#next-btn-container").hide();
         }
       },
-      function(){ 
+      function(){
         $("#messages-list").html("There was an error getting the messages!");
       }
     );
@@ -358,14 +339,14 @@ $(document).ready(function () {
     }
     //make sure we are on the messages page
     window.location = "#page-messages-list";
-    
+
     fullFeedView = true;
     $('#btn-show-full-feed').addClass('ui-btn-up-c');
     $('#btn-show-my-feed').removeClass('ui-btn-up-c');
 
     fullActivityFeed.get(
       function(){
-        drawMessages(fullActivityFeed);        
+        drawMessages(fullActivityFeed);
         if (fullActivityFeed.hasPreviousPage()) {
           $("#previous-btn-container").show();
         } else {
@@ -400,16 +381,15 @@ $(document).ready(function () {
     var usersToBind = [];
     feed.resetEntityPointer();
     while(feed.hasNextEntity()) {
-      var message = feed.getNextEntity();
-      var created = message.get('created');
-      var content = message.get('content');
-      var actor = message.get('actor');
-      var name = actor.displayName;
-      if (!name) { name = 'Anonymous'; }
-      var username = actor.displayName;
+      var message = feed.getNextEntity(),
+        created = message.get('created'),
+        content = message.get('content'),
+        email = '',
+        imageUrl = '',
+        actor = message.get('actor'),
+        name = actor.displayName || 'Anonymous',
+        username = actor.displayName;
 
-      var email = '';
-      var imageUrl = '';
       if ('email' in actor) {
         email = actor.email;
         imageUrl = 'http://www.gravatar.com/avatar/' + MD5(email.toLowerCase()) + '?s=' + 50;
@@ -423,12 +403,7 @@ $(document).ready(function () {
         imageUrl = 'http://www.gravatar.com/avatar/' + MD5('rod@apigee.com') + '?s=' + 50;
       }
 
-      var initialDate = new Date(created);
-      var offset = initialDate.getTimezoneOffset() * 60000;
-      var utcDate = created - offset;
-      var date = new Date(utcDate);
-      var isotime = date.toISOString();
-      formattedTime = prettyDate(isotime);
+      formattedTime = prettyDate(created);
 
       html += '<div style="border-bottom: 1px solid #444; padding: 5px; min-height: 60px;"><img src="' + imageUrl + '" style="border none; height: 50px; width: 50px; float: left;padding-right: 10px"> ';
       html += '<span style="float: right">'+formattedTime+'</span>';
@@ -543,7 +518,7 @@ $(document).ready(function () {
           //reset the feed object so when we view it again, we will get the latest feed
           userFeed.clearQuery();
           showMyFeed();
-        }        
+        }
         window.location = "#page-messages-list";
       },
       function () {
@@ -563,12 +538,11 @@ $(document).ready(function () {
    * Licensed under the MIT and GPL licenses.
    */
 
-  // Takes an ISO time and returns a string representing how
-  // long ago the date represents.
-  function prettyDate(time){
-    var date = new Date((time || "").replace(/-/g,"/").replace(/[TZ]/g," "));
-    var diff = (((new Date()).getTime() - date.getTime()) / 1000);
-    var day_diff = Math.floor(diff / 86400);
+  // Takes a numeric date value (in seconds) and returns a string
+  // representing how long ago the date represents.
+  function prettyDate(createdDateValue) {
+    var diff = (((new Date()).getTime() - createdDateValue) / 1000),
+      day_diff = Math.floor(diff / 86400);
 
     if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
       return 'just now';
