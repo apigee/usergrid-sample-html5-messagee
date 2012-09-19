@@ -162,7 +162,7 @@ $(document).ready(function () {
   function pageUpdateAccount(){
     //turn the reload timer off so we don't get interrupted during the update
     window.clearInterval( feedReloadTimer );
-    
+
     $("#update-name").val(appUser.get('name'));
     $("#update-email").val(appUser.get('email'));
     $("#update-username").val(appUser.get('username'));
@@ -274,7 +274,7 @@ $(document).ready(function () {
            $('#user-message-update-account').html('<strong>There was an error updating your account</strong>');
         }
       );
-    } 
+    }
   }
 
   /**
@@ -326,7 +326,7 @@ $(document).ready(function () {
           $("#next-btn-container").hide();
         }
       },
-      function(){ 
+      function(){
         $("#messages-list").html("There was an error getting the messages!");
       }
     );
@@ -358,14 +358,14 @@ $(document).ready(function () {
     }
     //make sure we are on the messages page
     window.location = "#page-messages-list";
-    
+
     fullFeedView = true;
     $('#btn-show-full-feed').addClass('ui-btn-up-c');
     $('#btn-show-my-feed').removeClass('ui-btn-up-c');
 
     fullActivityFeed.get(
       function(){
-        drawMessages(fullActivityFeed);        
+        drawMessages(fullActivityFeed);
         if (fullActivityFeed.hasPreviousPage()) {
           $("#previous-btn-container").show();
         } else {
@@ -400,16 +400,15 @@ $(document).ready(function () {
     var usersToBind = [];
     feed.resetEntityPointer();
     while(feed.hasNextEntity()) {
-      var message = feed.getNextEntity();
-      var created = message.get('created');
-      var content = message.get('content');
-      var actor = message.get('actor');
-      var name = actor.displayName;
-      if (!name) { name = 'Anonymous'; }
-      var username = actor.displayName;
+      var message = feed.getNextEntity(),
+        created = message.get('created'),
+        content = message.get('content'),
+        email = '',
+        imageUrl = '',
+        actor = message.get('actor'),
+        name = actor.displayName || 'Anonymous',
+        username = actor.displayName;
 
-      var email = '';
-      var imageUrl = '';
       if ('email' in actor) {
         email = actor.email;
         imageUrl = 'http://www.gravatar.com/avatar/' + MD5(email.toLowerCase()) + '?s=' + 50;
@@ -423,12 +422,7 @@ $(document).ready(function () {
         imageUrl = 'http://www.gravatar.com/avatar/' + MD5('rod@apigee.com') + '?s=' + 50;
       }
 
-      var initialDate = new Date(created);
-      var offset = initialDate.getTimezoneOffset() * 60000;
-      var utcDate = created - offset;
-      var date = new Date(utcDate);
-      var isotime = date.toISOString();
-      formattedTime = prettyDate(isotime);
+      formattedTime = prettyDate(created);
 
       html += '<div style="border-bottom: 1px solid #444; padding: 5px; min-height: 60px;"><img src="' + imageUrl + '" style="border none; height: 50px; width: 50px; float: left;padding-right: 10px"> ';
       html += '<span style="float: right">'+formattedTime+'</span>';
@@ -543,7 +537,7 @@ $(document).ready(function () {
           //reset the feed object so when we view it again, we will get the latest feed
           userFeed.clearQuery();
           showMyFeed();
-        }        
+        }
         window.location = "#page-messages-list";
       },
       function () {
@@ -565,10 +559,9 @@ $(document).ready(function () {
 
   // Takes an ISO time and returns a string representing how
   // long ago the date represents.
-  function prettyDate(time){
-    var date = new Date((time || "").replace(/-/g,"/").replace(/[TZ]/g," "));
-    var diff = (((new Date()).getTime() - date.getTime()) / 1000);
-    var day_diff = Math.floor(diff / 86400);
+  function prettyDate(createdDateValue) {
+    var diff = (((new Date()).getTime() - createdDateValue) / 1000),
+      day_diff = Math.floor(diff / 86400);
 
     if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
       return 'just now';
