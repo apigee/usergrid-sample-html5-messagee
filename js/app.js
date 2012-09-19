@@ -43,25 +43,11 @@ $(document).ready(function () {
   userFeed.setQueryParams({"ql":"order by created desc"});
 
   //bind the various click events
-  $('#btn-login').bind('click', function() {
-    login();
-  });
-
-  $('#btn-show-page-update-account').bind('click', function() {
-     pageUpdateAccount();
-  });
-
-  $('#btn-logout').bind('click', function() {
-    logout();
-  });
-
-  $('#btn-create-new-account').bind('click', function() {
-    createNewUser();
-  });
-
-  $('#btn-update-account').bind('click', function() {
-    updateUser();
-  });
+  $('#btn-login').bind('click', login);
+  $('#btn-show-page-update-account').bind('click', pageUpdateAccount);
+  $('#btn-logout').bind('click', logout);
+  $('#btn-create-new-account').bind('click', createNewUser);
+  $('#btn-update-account').bind('click', updateUser);
 
   $('#btn-close').bind('click', function() {
     //turn the reload timer on
@@ -84,13 +70,8 @@ $(document).ready(function () {
     }
   });
 
-  $('#btn-show-my-feed').bind('click', function() {
-    showMyFeed();
-  });
-
-  $('#btn-show-full-feed').bind('click', function() {
-    showFullFeed();
-  });
+  $('#btn-show-my-feed').bind('click', showMyFeed);
+  $('#btn-show-full-feed').bind('click', showFullFeed);
 
   $('#btn-show-create-message').bind('click', function() {;
     $("#content").val('');
@@ -99,9 +80,7 @@ $(document).ready(function () {
     window.clearInterval( feedReloadTimer );
   });
 
-  $('#post-message').bind('click', function() {
-    postMessage();
-  });
+  $('#post-message').bind('click', postMessage);
 
   /**
    *  function to log in the app user.  The API returns a token,
@@ -186,10 +165,10 @@ $(document).ready(function () {
     $("#new-username").removeClass('error');
     $("#new-password").removeClass('error');
 
-    var name     = $("#new-name").val();
-    var email    = $("#new-email").val();
-    var username = $("#new-username").val();
-    var password = $("#new-password").val();
+    var name     = $("#new-name").val(),
+        email    = $("#new-email").val(),
+        username = $("#new-username").val(),
+        password = $("#new-password").val();
 
     if (Usergrid.validation.validateName(name, function (){
           $("#new-name").focus();
@@ -202,8 +181,9 @@ $(document).ready(function () {
           $("#new-username").addClass('error');})  &&
          Usergrid.validation.validatePassword(password, function (){
           $("#new-password").focus();
-          $("#new-password").addClass('error');})  ) {
-      appUser = new Usergrid.Entity('users'); //make sure we have a clean user, and then add the data
+           $("#new-password").addClass('error');})  ) {
+      // make sure we have a clean user, and then add the data
+      appUser = new Usergrid.Entity('users');
       appUser.set({"name":name,"username":username,"email":email,"password":password});
       appUser.save(
         function () {
@@ -217,7 +197,8 @@ $(document).ready(function () {
           $('#login-section-error').html('There was an error creating the new user.');
         }
       );
-    } else {
+    }
+      else {
 
     }
   }
@@ -557,8 +538,8 @@ $(document).ready(function () {
    * Licensed under the MIT and GPL licenses.
    */
 
-  // Takes an ISO time and returns a string representing how
-  // long ago the date represents.
+  // Takes a numeric date value (in seconds) and returns a string
+  // representing how long ago the date represents.
   function prettyDate(createdDateValue) {
     var diff = (((new Date()).getTime() - createdDateValue) / 1000),
       day_diff = Math.floor(diff / 86400);
