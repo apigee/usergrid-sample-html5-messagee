@@ -25,7 +25,7 @@ window.console.log = window.console.log || function() {};
 //Usergrid namespace encapsulates this SDK
 window.Usergrid = window.Usergrid || {};
 Usergrid = Usergrid || {};
-Usergrid.SDK_VERSION = '0.9.6';
+Usergrid.SDK_VERSION = '0.9.7';
 
 /**
  *  Usergrid.Query is a class for holding all query information and paging state
@@ -1160,8 +1160,8 @@ Usergrid.ApiClient = (function () {
    *
    */
   function init(orgName, appName){
-    _orgName = orgName;
-    _appName = appName;
+    this.setOrganizationName(orgName);
+    this.setApplicationName(appName);
   }
 
   /*
@@ -1212,29 +1212,6 @@ Usergrid.ApiClient = (function () {
     */
   function setOrganizationName(orgName) {
     _orgName = orgName;
-  }
-
-  /*
-    *  A public method to get the organization UUID to be used by the client
-    *
-    *  @method getOrganizationUUID
-    *  @public
-    *  @return {string} the organization UUID
-    */
-  function getOrganizationUUID() {
-    return _orgUUID;
-  }
-
-  /*
-    *  A public method to set the organization UUID to be used by the client
-    *
-    *  @method setOrganizationUUID
-    *  @public
-    *  @param orgUUID - the organization UUID
-    *  @return none
-    */
-  function setOrganizationUUID(orgUUID) {
-    _orgUUID = orgUUID;
   }
 
   /*
@@ -1393,7 +1370,7 @@ Usergrid.ApiClient = (function () {
    *  @return none
    */
   function logoutAppUser() {
-    this._loggedInUser = null;
+    this.setLoggedInUser(null);
     this.setToken(null);
   }
 
@@ -1631,6 +1608,8 @@ Usergrid.ApiClient = (function () {
     //store the curl command back in the object
     Query.setCurl(curl);
 
+    var ie = (navigator.appName == 'Microsoft Internet Explorer') ? true:false;
+
     //so far so good, so run the query
     var xD = window.XDomainRequest ? true : false;
     var xM = window.XMLHttpRequest ? true : false;
@@ -1646,9 +1625,13 @@ Usergrid.ApiClient = (function () {
           path = '?access_token='+Usergrid.ApiClient.getToken();
         }
       }
+      if (ie) {
+
+
+      }
       xhr.open(method, path, true);
     }
-    else if (xM)
+    else 
     {
       xhr = new XMLHttpRequest();
       xhr.open(method, path, true);
@@ -1656,16 +1639,6 @@ Usergrid.ApiClient = (function () {
         xhr.setRequestHeader("Authorization", "Bearer " + Usergrid.ApiClient.getToken());
         xhr.withCredentials = true;
       }
-    } else {
-      xhr = new ActiveXObject("MSXML2.XMLHTTP.3.0");
-      if (Usergrid.ApiClient.getToken()) {
-        if (path.indexOf("?")) {
-          path += '&access_token='+Usergrid.ApiClient.getToken();
-        } else {
-          path = '?access_token='+Usergrid.ApiClient.getToken();
-        }
-      }
-      xhr.open(method, path, true);
     }
 
     //add content type = json if there is a json payload
@@ -1741,8 +1714,6 @@ Usergrid.ApiClient = (function () {
     runManagementQuery:runManagementQuery,
     getOrganizationName:getOrganizationName,
     setOrganizationName:setOrganizationName,
-    getOrganizationUUID:getOrganizationUUID,
-    setOrganizationUUID:setOrganizationUUID,
     getApplicationName:getApplicationName,
     setApplicationName:setApplicationName,
     getToken:getToken,
