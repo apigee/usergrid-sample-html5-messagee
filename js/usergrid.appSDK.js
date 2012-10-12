@@ -1138,13 +1138,8 @@ Usergrid.ApiClient = (function () {
   //API endpoint
   var _apiUrl = "https://api.usergrid.com/";
   var _orgName = null;
-  var _orgUUID = null;
   var _appName = null;
   var _token = null;
-  var _appUserUsername = null;
-  var _appUserName = null;
-  var _appUserEmail = null;
-  var _appUserUUID = null;
   var _queryType = null;
   var _loggedInUser = null;
   var _logoutCallback = null;
@@ -1608,11 +1603,8 @@ Usergrid.ApiClient = (function () {
     //store the curl command back in the object
     Query.setCurl(curl);
 
-    var ie = (navigator.appName == 'Microsoft Internet Explorer') ? true:false;
-
     //so far so good, so run the query
     var xD = window.XDomainRequest ? true : false;
-    var xM = window.XMLHttpRequest ? true : false;
     var xhr;
 
     if(xD)
@@ -1625,25 +1617,20 @@ Usergrid.ApiClient = (function () {
           path = '?access_token='+Usergrid.ApiClient.getToken();
         }
       }
-      if (ie) {
-
-
-      }
       xhr.open(method, path, true);
     }
-    else 
+    else
     {
       xhr = new XMLHttpRequest();
       xhr.open(method, path, true);
+      //add content type = json if there is a json payload
+      if (jsonObj) {
+        xhr.setRequestHeader("Content-Type", "application/json");
+      }
       if (Usergrid.ApiClient.getToken()) {
         xhr.setRequestHeader("Authorization", "Bearer " + Usergrid.ApiClient.getToken());
         xhr.withCredentials = true;
       }
-    }
-
-    //add content type = json if there is a json payload
-    if (jsonObj) {
-      xhr.setRequestHeader("Content-Type", "application/json");
     }
 
     // Handle response.
