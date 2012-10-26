@@ -161,10 +161,10 @@ $(document).ready(function () {
     $("#new-username").removeClass('error');
     $("#new-password").removeClass('error');
 
-    var name     = $("#new-name").val(),
-        email    = $("#new-email").val(),
-        username = $("#new-username").val(),
-        password = $("#new-password").val();
+    var name     = $("#new-name").val();
+    var email    = $("#new-email").val();
+    var username = $("#new-username").val();
+    var password = $("#new-password").val();
 
     if (Usergrid.validation.validateName(name, function (){
           $("#new-name").focus();
@@ -536,8 +536,8 @@ $(document).ready(function () {
   // Takes a numeric date value (in seconds) and returns a string
   // representing how long ago the date represents.
   function prettyDate(createdDateValue) {
-    var diff = (((new Date()).getTime() - createdDateValue) / 1000),
-      day_diff = Math.floor(diff / 86400);
+    var diff = (((new Date()).getTime() - createdDateValue) / 1000)
+    var day_diff = Math.floor(diff / 86400);
 
     if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
       return 'just now';
