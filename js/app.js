@@ -289,7 +289,7 @@ $(document).ready(function () {
     fullActivityFeed.clearQuery();
 
     //get the users feed
-    userFeed.get(
+    userFeed.fetch(
       function(){
         drawMessages(userFeed);
         if (userFeed.hasPreviousPage()) {
@@ -340,7 +340,7 @@ $(document).ready(function () {
     $('#btn-show-full-feed').addClass('ui-btn-up-c');
     $('#btn-show-my-feed').removeClass('ui-btn-up-c');
 
-    fullActivityFeed.get(
+    fullActivityFeed.fetch(
       function(){
         drawMessages(fullActivityFeed);
         if (fullActivityFeed.hasPreviousPage()) {
@@ -494,7 +494,8 @@ $(document).ready(function () {
         "url" : "http://www.gravatar.com/avatar/",
         "width" : 80
       },
-      "email" : appUser.get('email')
+      "email" : appUser.get('email'),
+      "picture": "fred"
     },
     "verb" : "post",
     "content" : content,
