@@ -27,66 +27,108 @@
  *  This file contains the main program logic for Messagee.
  */
 $(document).ready(function () {
-  //if the app was somehow loaded on another page, default to the login page
-  window.location = "#page-login";
-  //a new user object
-  var appUser = new Usergrid.Entity('user');
-  //a new Collection object that will be used to hold the full feed list
-  var fullActivityFeed = new Usergrid.Collection("activities");
-  //make sure messages are pulled back in order
-  fullActivityFeed.setQueryParams({"ql":"order by created desc"});
-  //default to full feed view
+  
+  /*******************************************************************
+  * create client and set up vars
+  ********************************************************************/
+  var client = new Usergrid.Client({
+    orgName:'ApigeeOrg', //your orgname goes here (not case sensitive)
+    appName:'MessageeApp', //your appname goes here (not case sensitive)
+    logging: true, //optional - turn on logging, off by default
+    buildCurl: true //optional - turn on curl commands, off by default
+  });
+  
+  var appUser;
   var fullFeedView = true;
-  //a new Collection object that will be used to hold the user's feed
-  var userFeed = new Usergrid.Collection('users/me/feed');
-  //make sure messages are pulled back in order
-  userFeed.setQueryParams({"ql":"order by created desc"});
+  var fullActivityFeed;
+  var userFeed;
 
-  //bind the various click events
+  /*******************************************************************
+  * bind the various click events
+  ********************************************************************/
   $('#btn-login').bind('click', login);
   $('#btn-show-page-update-account').bind('click', pageUpdateAccount);
   $('#btn-logout').bind('click', logout);
   $('#btn-create-new-account').bind('click', createNewUser);
   $('#btn-update-account').bind('click', updateUser);
-
-  $('#btn-previous').bind('click', function() {
-    if (fullFeedView) {
-      fullActivityFeed.getPreviousPage();
-    } else {
-      userFeed.getPreviousPage();
-    }
-  });
-
-  $('#btn-next').bind('click', function() {
-    if (fullFeedView) {
-      fullActivityFeed.getNextPage();
-    } else {
-      userFeed.getNextPage();
-    }
-  });
-
   $('#btn-show-my-feed').bind('click', showMyFeed);
   $('#btn-show-full-feed').bind('click', showFullFeed);
-
   $('#btn-show-create-message').bind('click', function() {;
     $("#content").val('');
     $("#content").focus();
   });
-
   $('#post-message').bind('click', postMessage);
 
-  //log the user in if they already have a session
-  if (Usergrid.ApiClient.isLoggedInAppUser()) {
-    appUser = Usergrid.ApiClient.getLoggedInUser();
-    showFullFeed();
-  }
-
+  //bind the next and previous buttons
+  $('#btn-previous').bind('click', function() {
+    if (fullFeedView) {
+      fullActivityFeed.getPreviousPage(function (err) {
+        if (err) {
+          alert('Could not get feed. Please try again.');
+        } else {
+          drawMessages(fullActivityFeed);
+        }
+      });
+    } else {
+      userFeed.getPreviousPage(function (err) {
+        if (err) {
+          alert('Could not get feed. Please try again.');
+        } else {
+          drawMessages(userFeed);
+        }
+      });
+    }
+  });
+    
+  $('#btn-next').bind('click', function() {
+    if (fullFeedView) {
+      fullActivityFeed.getNextPage(function (err) {
+        if (err) {
+          alert('Could not get feed. Please try again.');
+        } else {
+          drawMessages(fullActivityFeed);
+        }
+      });
+    } else {
+      userFeed.getNextPage(function (err) {
+        if (err) {
+          alert('Could not get feed. Please try again.');
+        } else {
+          drawMessages(userFeed);
+        }
+      });
+    }
+  });
+    
+    
+  /*******************************************************************
+  * default actions for page load
+  ********************************************************************/
+  //if the app was somehow loaded on another page, default to the login page
+  window.location = "#page-login";
+  
+  //when the page loads, try to get the current user.  If a token is
+  //stored and it is valid, then don't make them log in again
+  client.getLoggedInUser(function(err, data, user) {
+    if(err) {
+      //error - could not get logged in user
+    } else {
+      if (client.isLoggedIn()){
+        appUser = user;
+        showFullFeed();
+      }
+    }
+  });
+  
+  /*******************************************************************
+  * main program functions
+  ********************************************************************/
+ 
   /**
    *  function to log in the app user.  The API returns a token,
-   *  which is stored in Usergrid.ApiClient and used for all future
-   *  calls.  We pass 2 callback functions, the first is called
-   *  in the event of a succesful call to the API.  The second is
-   *  called when there was an error.
+   *  which is stored in the client and used for all future
+   *  calls.  We pass a username, password, and a callback function
+   *  which is called when the api call returns (asynchronously).
    *
    *  Once the call is sucessful, we transition the user to the page
    *  that displays the list of messages.
@@ -98,23 +140,32 @@ $(document).ready(function () {
     $('#login-section-error').html('');
     var username = $("#username").val();
     var password = $("#password").val();
-    Usergrid.ApiClient.logInAppUser(username, password,
-      function (response, user) {
-        //login succeeded
-        appUser = Usergrid.ApiClient.getLoggedInUser();
-        //clear out the login form so it is empty if the user chooses to log out
-        $("#username").val('');
-        $("#password").val('');
 
-        //reset the query on both the feed objects to make sure we get the first page of results
-        userFeed.clearQuery();
-        fullActivityFeed.clearQuery();
+    client.login(username, password,
+      function (err) {
+        if (err) {
+          $('#login-section-error').html('There was an error logging you in.');
+        } else {
+          //login succeeded
+          client.getLoggedInUser(function(err, data, user) {
+            if(err) {
+              //error - could not get logged in user
+            } else {
+              if (client.isLoggedIn()){
+                appUser = user;
+               // showFullFeed();
+              }
+            }
+          });
+  
+          //clear out the login form so it is empty if the user chooses to log out
+          $("#username").val('');
+          $("#password").val('');
 
-        //default to the full feed view (all messages in the system)
-        showFullFeed();
-      },
-      function () {
-        $('#login-section-error').html('There was an error logging you in.');
+          //default to the full feed view (all messages in the system)
+          //showFullFeed();
+          showMyFeed();
+        }
       }
     );
   }
@@ -126,7 +177,7 @@ $(document).ready(function () {
    * @return none
    */
   function logout() {
-    Usergrid.ApiClient.logoutAppUser();
+    client.logout();
     window.location = "#page-login";
   }
 
@@ -149,7 +200,7 @@ $(document).ready(function () {
    *  First we make sure there are no errors on the form (in case they
    *  submitted prior and have corrected some data).
    *  Next, we get all the new data out of the form, validate it, then
-   *  call the create app user function to send it to the API
+   *  call the createEntity function to send it to the API
    *
    *  @method createNewUser
    *  @return none
@@ -179,23 +230,26 @@ $(document).ready(function () {
           $("#new-password").focus();
            $("#new-password").addClass('error');})  ) {
       // make sure we have a clean user, and then add the data
-      appUser = new Usergrid.Entity('users');
-      appUser.set({"name":name,"username":username,"email":email,"password":password});
-      appUser.save(
-        function () {
+      var options = {
+        type:'users',
+        username:username,
+        password:password,
+        name:name,
+        email:email
+      }
+      
+      client.createEntity(options, function (err, newUser) {
+        if (err){
+           window.location = "#login";
+          $('#login-section-error').html('There was an error creating the new user.');
+        } else {
+          appUser = newUser;
           //new user is created, so set their values in the login form and call login
           $("#username").val(username);
           $("#password").val(password);
           login();
-        },
-        function () {
-          window.location = "#login";
-          $('#login-section-error').html('There was an error creating the new user.');
         }
-      );
-    }
-      else {
-
+      });
     }
   }
 
@@ -204,8 +258,8 @@ $(document).ready(function () {
    *
    *  First we make sure there are no errors on the form (in case they
    *  submitted prior and have corrected some data).
-   *  Next, we get all the new data out of the form, validate it, then
-   *  call the update app user function to send it to the API
+   *  Next, we get all the new data out of the form, validate it, set
+   *  it in the user Entity, then call the save function to send it to the API
    *
    *  @method updateUser
    *  @return none
@@ -240,10 +294,10 @@ $(document).ready(function () {
         Usergrid.validation.validatePassword(newpassword, function (){
           $("#update-newpassword").focus();
           $("#update-newpassword").addClass('error');})  ) {
+      
       appUser.set({"name":name,"username":username,"email":email,"oldpassword":oldpassword, "newpassword":newpassword});
       appUser.save(
         function () {
-          appUser = Usergrid.ApiClient.getLoggedInUser();
           $('#user-message-update-account').html('<strong>Your account was updated</strong>');
         },
         function () {
@@ -260,21 +314,20 @@ $(document).ready(function () {
    *  First make sure the user is logged in, then we make sure we are on
    *  the messages list page.
    *
-   *  Next, we clear the Query of the Full feed object, so that the next
-   *  time the user wants to see the full feed it will be reset to the
-   *  beginning.
+   *  Next, we reset the paging of the feed object, so that user will 
+   *  see the first page of the feed
    *
-   *  Finally we do a get on the userFeed object which makes a call to the
-   *  API and populates it with the messages in the User's feed
+   *  Next, we check to see if the feed object exists.  If so, we we do a 
+   *  get on the feed object, which makes a call to the
+   *  API to retrieve the messages in the feed
    *
-   *  On success, the drawMessages method is invoked, followd by
-   *  a check for a next or previous page of data
+   *  On success, the drawMessages method is invoked
    *
    *  @method showMyFeed
    *  @return none
    */
   function showMyFeed() {
-    if (!Usergrid.ApiClient.isLoggedInAppUser()) {
+    if (!client.isLoggedIn()) {
       window.location = "#page-login";
       return;
     }
@@ -285,51 +338,53 @@ $(document).ready(function () {
     $('#btn-show-full-feed').removeClass('ui-btn-up-c');
     $('#btn-show-my-feed').addClass('ui-btn-up-c');
 
-    //reset the full feed object so when we view it again, we will get the latest feed
-    fullActivityFeed.clearQuery();
-
-    //get the users feed
-    userFeed.fetch(
-      function(){
-        drawMessages(userFeed);
-        if (userFeed.hasPreviousPage()) {
-          $("#previous-btn-container").show();
+    if  (userFeed) {
+      userFeed.resetPaging();
+      userFeed.fetch(function (err) {
+        if (err) {
+          alert('Could not get user feed. Please try again.');
         } else {
-          $("#previous-btn-container").hide();
+          drawMessages(userFeed);
         }
-        if (userFeed.hasNextPage()) {
-          $("#next-btn-container").show();
-        } else {
-          $("#next-btn-container").hide();
-        }
-      },
-      function(){
-        $("#messages-list").html("There was an error getting the messages!");
+      });
+    } else {
+      //no feed obj yet, so make a new one
+      var options = {
+        type:'user/me/feed',
+        qs:{"ql":"order by created desc"}
       }
-    );
+      client.createCollection(options, function(err, collectionObj){
+        if (err) {
+         alert('Could not get user feed. Please try again.');
+        } else {
+          userFeed = collectionObj;
+          drawMessages(userFeed);
+        }
+      });
+      
+    }
   }
 
   /**
-   *  Function to get the full feed from the API
+   *  Function to get the user's feed from the API
    *
    *  First make sure the user is logged in, then we make sure we are on
    *  the messages list page.
    *
-   *  Next, we clear the Query of the user's feed object, so that the next
-   *  time the user wants to see the user feed it will be reset to the
-   *  beginning.
+   *  Next, we reset the paging of the feed object, so that user will 
+   *  see the first page of the feed
    *
-   *  Finally we do a get on the fullActivityFeed object which makes a call
-   *  to the API and populates it with the messages in the full feed
+   *  Next, we check to see if the feed object exists.  If so, we we do a 
+   *  get on the feed object, which makes a call to the
+   *  API to retrieve the messages in the feed
    *
-   *  On success, the drawMessages method is invoked, followd by
-   *  a check for a next or previous page of data
+   *  On success, the drawMessages method is invoked
    *
    *  @method showFullFeed
    *  @return none
    */
   function showFullFeed() {
-    if (!Usergrid.ApiClient.isLoggedInAppUser()) {
+    if (!client.isLoggedIn()) {
       window.location = "#page-login";
       return;
     }
@@ -340,24 +395,31 @@ $(document).ready(function () {
     $('#btn-show-full-feed').addClass('ui-btn-up-c');
     $('#btn-show-my-feed').removeClass('ui-btn-up-c');
 
-    fullActivityFeed.fetch(
-      function(){
-        drawMessages(fullActivityFeed);
-        if (fullActivityFeed.hasPreviousPage()) {
-          $("#previous-btn-container").show();
+
+    if  (fullActivityFeed) {
+      fullActivityFeed.resetPaging();
+      fullActivityFeed.fetch(function (err) {
+        if (err) {
+          alert('Could not get activity feed. Please try again.');
         } else {
-          $("#previous-btn-container").hide();
+          drawMessages(fullActivityFeed);
         }
-        if (fullActivityFeed.hasNextPage()) {
-          $("#next-btn-container").show();
-        } else {
-          $("#next-btn-container").hide();
-        }
-      },
-      function(){
-        $("#messages-list").html("There was an error getting the messages!");
+      });
+    } else {
+      var options = {
+        type:'activities',
+        qs:{"ql":"order by created desc"}
       }
-    );
+      //no feed obj yet, so make a new one
+      client.createCollection(options, function(err, collectionObj){
+        if (err) {
+          alert('Could not get activity feed. Please try again.');
+        } else {
+          fullActivityFeed = collectionObj;
+          drawMessages(fullActivityFeed);
+        }
+      });
+    }
   }
 
   /**
@@ -366,6 +428,8 @@ $(document).ready(function () {
    *  First, we create an array that will hold a the username of each person
    *  who posted a message.  We will use this to bind click events for the
    *  "follow" feature on the page.  We will set up the click events at the end of the page refresh
+   * 
+   *  At the end of the method, we show the next and previous buttons if applicable
    *
    *  @method drawMessages
    *  @param {object} feed -a Collection object
@@ -419,56 +483,58 @@ $(document).ready(function () {
         followUser(username);
       });
     }
-     $(this).scrollTop(0);
+    //next show the next / previous buttons
+    if (feed.hasPreviousPage()) {
+      $("#previous-btn-container").show();
+    } else {
+      $("#previous-btn-container").hide();
+    }
+    if (feed.hasNextPage()) {
+      $("#next-btn-container").show();
+    } else {
+      $("#next-btn-container").hide();
+    }
+    
+    $(this).scrollTop(0);
   }
 
   /**
    *  Method to create the following relationship between two users
    *
-   *  Notice that this function makes a call directly to the API instead
-   *  of creating an Entity object.  Either way accomplishes the same goal,
-   *  and you can use either method in your app - it just depends on what
-   *  type of functionality you need.
-   *
-   *  If you make an object, you can persist it in your app, and can take
-   *  advantage of the Entity object's functionality.  If instead you simply
-   *  require a simple call to the API, this method below (runAppQuery) may
-   *  be what you want.
-   *
    *  @method followUser
+   *  @param username - user to follow
    *  @return none
    *
    */
   function followUser(username) {
-    if (!Usergrid.ApiClient.isLoggedInAppUser()) {
+    if (!client.isLoggedIn()) {
       window.location = "#page-login";
       return false;
     }
 
-    //reset the full feed object so when we view it again, we will get the latest feed
-    fullActivityFeed.clearQuery();
-    userFeed.clearQuery();
-    appUser = Usergrid.ApiClient.getLoggedInUser();
-    Usergrid.ApiClient.runAppQuery(new Usergrid.Query('POST', 'users/' + appUser.get('username') + '/following/users/' + username, null, null,
-      function() {
-        $('#now-following-text').html('Congratulations! You are now following <strong>' + username + '</strong>');
-        //showMyFeed();
-      },
-      function() {
+    //reset paging so we make sure our results start at the beginning
+    fullActivityFeed.resetPaging();
+    userFeed.resetPaging();
+   
+    var options = {
+      method:'POST',
+      endpoint:'users/me/following/users/' + username
+    };
+    client.request(options, function (err, data) {
+      if (err) {
         $('#now-following-text').html('Aw Shucks!  There was a problem trying to follow <strong>' + username + '</strong>');
+      } else {
+        $('#now-following-text').html('Congratulations! You are now following <strong>' + username + '</strong>');
+        showMyFeed();
       }
-    ));
+    });
   }
 
   /**
    *  Method to handle the create message form submission.  The
-   *  method gets the content from the form, then builds an activity
-   *  object by pulling the logged in user's data from the ApiClient.
-   *  The new activity is then saved to the database
-   *
-   *  This method shows how to create an Entity object and then save it
-   *  to the database.  To see how to make a call directly to the API,
-   *  check out the followUser function just above
+   *  method gets the content from the form, then builds the options
+   *  object by using the data from the logged in user. The new activity 
+   *  is then saved to the database using the createUserActivity method.
    *
    *  Finally once the message has been saved, we refresh the user's feed
    *  based in which "mode" they are viewing feeds in - user or full.
@@ -477,13 +543,11 @@ $(document).ready(function () {
    *  @return none
    */
   function postMessage() {
-    if (!Usergrid.ApiClient.isLoggedInAppUser()) {
+    if (!client.isLoggedIn()) {
       window.location = "#page-login";
       return false;
     }
-    appUser = Usergrid.ApiClient.getLoggedInUser();
-    var content = $("#content").val();
-    var actor =
+    var options =
     {"actor" : {
       "displayName" : appUser.get('username'),
       "uuid" : appUser.get('uuid'),
@@ -498,29 +562,26 @@ $(document).ready(function () {
       "picture": "fred"
     },
     "verb" : "post",
-    "content" : content,
+    "content" : $("#content").val(),
     "lat" : 48.856614,
     "lon" : 2.352222};
-
-    var message = new Usergrid.Entity('users/'+appUser.get('username')+'/activities');
-    message.set(actor);
-    message.save(
-      function () {
-        if (fullFeedView) {
+    
+    client.createUserActivity('me', options, function(err, activity) { //first argument can be 'me', a uuid, or a username
+      if (err) {
+        alert('could not post message');
+      } else {
+         if (fullFeedView) {
           //reset the feed object so when we view it again, we will get the latest feed
-          fullActivityFeed.clearQuery();
+          fullActivityFeed.resetPaging();
           showFullFeed();
         } else {
           //reset the feed object so when we view it again, we will get the latest feed
-          userFeed.clearQuery();
+          userFeed.resetPaging();
           showMyFeed();
         }
         window.location = "#page-messages-list";
-      },
-      function () {
-        alert('Could not post');
       }
-    );
+    });
   }
 
   /**
