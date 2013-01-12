@@ -171,6 +171,20 @@ $(document).ready(function () {
   }
 
   /**
+   *  a simple function to verify if the user is logged in
+   *
+   *  @method isLoggedIn
+   *  @return {bool}
+   */
+  function isLoggedIn() {
+    if (!client.isLoggedIn()) {
+      window.location = "#page-login";
+      return false;
+    }
+    return true
+  }
+  
+  /**
    * simple funciton to log out the app user, then return them to the login page
    *
    * @method logout
@@ -327,10 +341,8 @@ $(document).ready(function () {
    *  @return none
    */
   function showMyFeed() {
-    if (!client.isLoggedIn()) {
-      window.location = "#page-login";
-      return;
-    }
+    if (!isLoggedIn()) return;
+    
     //make sure we are on the messages page
     window.location = "#page-messages-list";
 
@@ -384,10 +396,8 @@ $(document).ready(function () {
    *  @return none
    */
   function showFullFeed() {
-    if (!client.isLoggedIn()) {
-      window.location = "#page-login";
-      return;
-    }
+    if (!isLoggedIn()) return;
+   
     //make sure we are on the messages page
     window.location = "#page-messages-list";
 
@@ -507,10 +517,7 @@ $(document).ready(function () {
    *
    */
   function followUser(username) {
-    if (!client.isLoggedIn()) {
-      window.location = "#page-login";
-      return false;
-    }
+    if (!isLoggedIn()) return;
 
     //reset paging so we make sure our results start at the beginning
     fullActivityFeed.resetPaging();
@@ -543,10 +550,8 @@ $(document).ready(function () {
    *  @return none
    */
   function postMessage() {
-    if (!client.isLoggedIn()) {
-      window.location = "#page-login";
-      return false;
-    }
+    if (!isLoggedIn()) return;
+    
     var options =
     {"actor" : {
       "displayName" : appUser.get('username'),
