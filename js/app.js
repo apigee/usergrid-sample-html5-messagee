@@ -163,7 +163,6 @@ $(document).ready(function () {
           $("#password").val('');
 
           //default to the full feed view (all messages in the system)
-          //showFullFeed();
           showMyFeed();
         }
       }
@@ -243,7 +242,7 @@ $(document).ready(function () {
          Usergrid.validation.validatePassword(password, function (){
           $("#new-password").focus();
            $("#new-password").addClass('error');})  ) {
-      // make sure we have a clean user, and then add the data
+      // build the options object to pass to the create entity function
       var options = {
         type:'users',
         username:username,
