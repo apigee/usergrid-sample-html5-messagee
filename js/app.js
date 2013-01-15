@@ -451,13 +451,13 @@ $(document).ready(function () {
     feed.resetEntityPointer();
     while(feed.hasNextEntity()) {
       var message = feed.getNextEntity(),
-        created = message.get('created'),
-        content = message.get('content'),
-        email = '',
-        imageUrl = '',
-        actor = message.get('actor'),
-        name = actor.displayName || 'Anonymous',
-        username = actor.displayName;
+      created = message.get('created'),
+      content = message.get('content'),
+      email = '',
+      imageUrl = '',
+      actor = message.get('actor'),
+      name = actor.displayName || 'Anonymous',
+      username = actor.displayName;
 
       if ('email' in actor) {
         email = actor.email;
