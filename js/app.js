@@ -27,7 +27,7 @@
  *  This file contains the main program logic for Messagee.
  */
 $(document).ready(function () {
-  
+
   /*******************************************************************
   * create client and set up vars
   ********************************************************************/
@@ -37,7 +37,7 @@ $(document).ready(function () {
     logging: true, //optional - turn on logging, off by default
     buildCurl: true //optional - turn on curl commands, off by default
   });
-  
+
   var appUser;
   var fullFeedView = true;
   var fullActivityFeed;
@@ -79,7 +79,7 @@ $(document).ready(function () {
       });
     }
   });
-    
+
   $('#btn-next').bind('click', function() {
     if (fullFeedView) {
       fullActivityFeed.getNextPage(function (err) {
@@ -99,14 +99,14 @@ $(document).ready(function () {
       });
     }
   });
-    
-    
+
+
   /*******************************************************************
   * default actions for page load
   ********************************************************************/
   //if the app was somehow loaded on another page, default to the login page
   window.location = "#page-login";
-  
+
   //when the page loads, try to get the current user.  If a token is
   //stored and it is valid, then don't make them log in again
   client.getLoggedInUser(function(err, data, user) {
@@ -119,11 +119,11 @@ $(document).ready(function () {
       }
     }
   });
-  
+
   /*******************************************************************
   * main program functions
   ********************************************************************/
- 
+
   /**
    *  function to log in the app user.  The API returns a token,
    *  which is stored in the client and used for all future
@@ -157,7 +157,7 @@ $(document).ready(function () {
               }
             }
           });
-  
+
           //clear out the login form so it is empty if the user chooses to log out
           $("#username").val('');
           $("#password").val('');
@@ -182,7 +182,7 @@ $(document).ready(function () {
     }
     return true
   }
-  
+
   /**
    * simple funciton to log out the app user, then return them to the login page
    *
@@ -250,7 +250,7 @@ $(document).ready(function () {
         name:name,
         email:email
       }
-      
+
       client.createEntity(options, function (err, newUser) {
         if (err){
            window.location = "#login";
@@ -307,7 +307,7 @@ $(document).ready(function () {
         Usergrid.validation.validatePassword(newpassword, function (){
           $("#update-newpassword").focus();
           $("#update-newpassword").addClass('error');})  ) {
-      
+
       appUser.set({"name":name,"username":username,"email":email,"oldpassword":oldpassword, "newpassword":newpassword});
       appUser.save(
         function () {
@@ -327,10 +327,10 @@ $(document).ready(function () {
    *  First make sure the user is logged in, then we make sure we are on
    *  the messages list page.
    *
-   *  Next, we reset the paging of the feed object, so that user will 
+   *  Next, we reset the paging of the feed object, so that user will
    *  see the first page of the feed
    *
-   *  Next, we check to see if the feed object exists.  If so, we we do a 
+   *  Next, we check to see if the feed object exists.  If so, we we do a
    *  get on the feed object, which makes a call to the
    *  API to retrieve the messages in the feed
    *
@@ -341,7 +341,7 @@ $(document).ready(function () {
    */
   function showMyFeed() {
     if (!isLoggedIn()) return;
-    
+
     //make sure we are on the messages page
     window.location = "#page-messages-list";
 
@@ -372,7 +372,6 @@ $(document).ready(function () {
           drawMessages(userFeed);
         }
       });
-      
     }
   }
 
@@ -382,10 +381,10 @@ $(document).ready(function () {
    *  First make sure the user is logged in, then we make sure we are on
    *  the messages list page.
    *
-   *  Next, we reset the paging of the feed object, so that user will 
+   *  Next, we reset the paging of the feed object, so that user will
    *  see the first page of the feed
    *
-   *  Next, we check to see if the feed object exists.  If so, we we do a 
+   *  Next, we check to see if the feed object exists.  If so, we we do a
    *  get on the feed object, which makes a call to the
    *  API to retrieve the messages in the feed
    *
@@ -396,7 +395,7 @@ $(document).ready(function () {
    */
   function showFullFeed() {
     if (!isLoggedIn()) return;
-   
+
     //make sure we are on the messages page
     window.location = "#page-messages-list";
 
@@ -437,7 +436,7 @@ $(document).ready(function () {
    *  First, we create an array that will hold a the username of each person
    *  who posted a message.  We will use this to bind click events for the
    *  "follow" feature on the page.  We will set up the click events at the end of the page refresh
-   * 
+   *
    *  At the end of the method, we show the next and previous buttons if applicable
    *
    *  @method drawMessages
@@ -503,7 +502,7 @@ $(document).ready(function () {
     } else {
       $("#next-btn-container").hide();
     }
-    
+
     $(this).scrollTop(0);
   }
 
@@ -521,7 +520,7 @@ $(document).ready(function () {
     //reset paging so we make sure our results start at the beginning
     fullActivityFeed.resetPaging();
     userFeed.resetPaging();
-   
+
     var options = {
       method:'POST',
       endpoint:'users/me/following/users/' + username
@@ -539,7 +538,7 @@ $(document).ready(function () {
   /**
    *  Method to handle the create message form submission.  The
    *  method gets the content from the form, then builds the options
-   *  object by using the data from the logged in user. The new activity 
+   *  object by using the data from the logged in user. The new activity
    *  is then saved to the database using the createUserActivity method.
    *
    *  Finally once the message has been saved, we refresh the user's feed
@@ -550,7 +549,7 @@ $(document).ready(function () {
    */
   function postMessage() {
     if (!isLoggedIn()) return;
-    
+
     var options =
     {"actor" : {
       "displayName" : appUser.get('username'),
@@ -569,7 +568,7 @@ $(document).ready(function () {
     "content" : $("#content").val(),
     "lat" : 48.856614,
     "lon" : 2.352222};
-    
+
     client.createUserActivity('me', options, function(err, activity) { //first argument can be 'me', a uuid, or a username
       if (err) {
         alert('could not post message');
