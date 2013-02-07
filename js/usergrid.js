@@ -32,12 +32,12 @@ Usergrid.SDK_VERSION = '0.10.03';
 
 Usergrid.Client = function(options) {
   //usergrid enpoint
-  this.URI = 'https://api.usergrid.com';
+  this.URI = options.URI || 'https://api.usergrid.com';
 
   //Find your Orgname and Appname in the Admin portal (http://apigee.com/usergrid)
   this.orgName = options.orgName;
   this.appName = options.appName;
-  
+
   //other options
   this.buildCurl = options.buildCurl || false;
   this.logging = options.logging || false;
@@ -229,10 +229,10 @@ Usergrid.Client.prototype.createCollection = function (options, callback) {
 
 /*
 *  Function for creating new activities for the current user - should be called directly.
-* 
+*
 *  //user can be any of the following: "me", a uuid, a username
 *  Note: the "me" alias will reference the currently logged in user (e.g. 'users/me/activties')
-* 
+*
 *  //build a json object that looks like this:
 *  var options =
 *  {
