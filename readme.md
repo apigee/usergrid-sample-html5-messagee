@@ -3,6 +3,11 @@
 #Overview
 Messagee is a [Twitter](http://twitter.com) clone built on Usergrid, the open source solution that powers Apigee's App Services. In this simplistic example, we show how you can easily implement many of the features of [Twitter](http://twitter.com) by leveraging the Usergrid API.
 
+For an in-depth look at how this app was built check out this article:
+
+<http://apigee.com/about/api-best-practices/building-twitter-apigee-app-services>
+
+
 #Demo
 A working example of this app can be found on our gh-pages branch:
 
