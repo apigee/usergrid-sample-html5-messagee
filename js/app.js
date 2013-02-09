@@ -309,15 +309,14 @@ $(document).ready(function () {
           $("#update-newpassword").addClass('error');})  ) {
 
       appUser.set({"name":name,"username":username,"email":email,"oldpassword":oldpassword, "newpassword":newpassword});
-      appUser.save(
-        function () {
-          $('#user-message-update-account').html('<strong>Your account was updated</strong>');
-        },
-        function () {
+      appUser.save(function (err) {
+        if (err) {
           window.location = "#login";
-           $('#user-message-update-account').html('<strong>There was an error updating your account</strong>');
+          $('#user-message-update-account').html('<strong>There was an error updating your account</strong>');
+        } else {
+          $('#user-message-update-account').html('<strong>Your account was updated</strong>');
         }
-      );
+      });
     }
   }
 

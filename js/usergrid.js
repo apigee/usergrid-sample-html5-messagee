@@ -28,7 +28,7 @@ window.console.log = window.console.log || function() {};
 //Usergrid namespace encapsulates this SDK
 window.Usergrid = window.Usergrid || {};
 Usergrid = Usergrid || {};
-Usergrid.SDK_VERSION = '0.10.03';
+Usergrid.SDK_VERSION = '0.10.04';
 
 Usergrid.Client = function(options) {
   //usergrid enpoint
@@ -46,7 +46,7 @@ Usergrid.Client = function(options) {
   this._callTimeout =  options.callTimeout || 30000; //default to 30 seconds
   this._callTimeoutCallback =  options.callTimeoutCallback || null;
   this.logoutCallback =  options.logoutCallback || null;
-	this.logout(); //needed to clear out any remnant token out of local storage
+  this.logout(); //needed to clear out any remnant token out of local storage
 };
 
 /*
@@ -195,6 +195,9 @@ Usergrid.Client.prototype.request = function (options, callback) {
 *  @return {callback} callback(err, data)
 */
 Usergrid.Client.prototype.createEntity = function (options, callback) {
+  // todo: replace the check for new / save on not found code with simple save
+  // when users PUT on no user fix is in place.
+  /*
   var options = {
     client:this,
     data:options
@@ -205,7 +208,59 @@ Usergrid.Client.prototype.createEntity = function (options, callback) {
       callback(err, entity);
     }
   });
+  */
+  var getOnExist = options.getOnExist || false; //if true, will return entity if one already exists
+  var options = {
+    client:this,
+    data:options
+  }
+  var entity = new Usergrid.Entity(options);
+  entity.fetch(function(err, data) {
+    //if the fetch doesn't find what we are looking for, or there is no error, do a save
+    var okToSave = (err && 'service_resource_not_found' === data.error) || (!err && getOnExist);
+    if(okToSave) {
+      entity.set(options.data); //add the data again just in case
+      entity.save(function(err, data) {
+        if (typeof(callback) === 'function') {
+          callback(err, entity);
+        }
+      });
+    } else {
+      if (typeof(callback) === 'function') {
+        callback(err, entity);
+      }
+    }
+  });
+
 }
+
+/*
+*  Main function for getting existing entities - should be called directly.
+*
+*  You must supply a uuid or (username or name). Username only applies to users.
+*  Name applies to all custom entities
+*
+*  options object: options {data:{'type':'collection_type', 'name':'value', 'username':'value'}, uuid:uuid}}
+*
+*  @method createEntity
+*  @public
+*  @params {object} options
+*  @param {function} callback
+*  @return {callback} callback(err, data)
+*/
+Usergrid.Client.prototype.getEntity = function (options, callback) {
+  var options = {
+    client:this,
+    data:options
+  }
+  var entity = new Usergrid.Entity(options);
+  entity.fetch(function(err, data) {
+    if (typeof(callback) === 'function') {
+      callback(err, entity);
+    }
+  });
+}
+
 
 /*
 *  Main function for creating new collections - should be called directly.
@@ -481,7 +536,6 @@ Usergrid.Client.prototype.buildCurlCall = function (options) {
   curl += ' ' + uri;
 
   //curl - add the body
-  body = JSON.stringify(body)
   if (body !== '"{}"' && method !== 'GET' && method !== 'DELETE') {
     //curl - add in the json obj
     curl += " -d '" + body + "'";
@@ -574,7 +628,7 @@ Usergrid.Entity.prototype.save = function (callback) {
   //remove system specific properties
   for (var item in entityData) {
     if (item === 'metadata' || item === 'created' || item === 'modified' ||
-        item === 'type' || item === 'activatted' ) { continue; }
+        item === 'type' || item === 'activatted' || item ==='uuid') { continue; }
     data[item] = entityData[item];
   }
   var options =  {
@@ -590,36 +644,36 @@ Usergrid.Entity.prototype.save = function (callback) {
         return callback(err, retdata, self);
       }
     } else {
-      if (retdata.entities.length) {
-        var entity = retdata.entities[0];
-        self.set(entity);
+      if (retdata.entities) {
+        if (retdata.entities.length) {
+          var entity = retdata.entities[0];
+          self.set(entity);
+        }
       }
       //if this is a user, update the password if it has been specified;
-      var needPasswordChange = (type === 'users' && entityData.oldpassword && entityData.newpassword);
+      var needPasswordChange = (self.get('type') === 'user' && entityData.oldpassword && entityData.newpassword);
       if (needPasswordChange) {
         //Note: we have a ticket in to change PUT calls to /users to accept the password change
         //      once that is done, we will remove this call and merge it all into one
         var pwdata = {};
         pwdata.oldpassword = entityData.oldpassword;
         pwdata.newpassword = entityData.newpassword;
-        this._client.request(
-          {
-            method:'PUT',
-            endpoint:type,
-            body:pwdata
-          },
-          function (err, data) {
-            if (err && self._client.logging) {
-              console.log('could not update user');
-            }
-            //remove old and new password fields so they don't end up as part of the entity object
-            self.set('oldpassword', null);
-            self.set('newpassword', null);
-            if (typeof(callback) === 'function') {
-              callback(err, data, self);
-            }
+        var options = {
+          method:'PUT',
+          endpoint:type+'/password',
+          body:pwdata
+        }
+        self._client.request(options, function (err, data) {
+          if (err && self._client.logging) {
+            console.log('could not update user');
           }
-        );
+          //remove old and new password fields so they don't end up as part of the entity object
+          self.set('oldpassword', null);
+          self.set('newpassword', null);
+          if (typeof(callback) === 'function') {
+            callback(err, data, self);
+          }
+        });
       } else if (typeof(callback) === 'function') {
         callback(err, retdata, self);
       }
@@ -679,9 +733,11 @@ Usergrid.Entity.prototype.fetch = function (callback) {
     } else {
       if (data.user) {
         self.set(data.user);
-      } else if (data.entities.length) {
-        var entity = data.entities[0];
-        self.set(entity);
+      } else if (data.entities) {
+        if (data.entities.length) {
+          var entity = data.entities[0];
+          self.set(entity);
+        }
       }
     }
     if (typeof(callback) === 'function') {
