@@ -31,12 +31,15 @@ $(document).ready(function () {
   /*******************************************************************
   * create client and set up vars
   ********************************************************************/
-  var client = new Usergrid.Client({
-    orgName:'ApigeeOrg', //your orgname goes here (not case sensitive)
-    appName:'MessageeApp', //your appname goes here (not case sensitive)
+
+  var client_creds = {
+    orgName:"yourorgname", //your orgname goes here (not case sensitive)
+    appName:"messagee", //your appname goes here (not case sensitive)
     logging: true, //optional - turn on logging, off by default
     buildCurl: true //optional - turn on curl commands, off by default
-  });
+  };
+  //Instantiates the Apigee data client and Apigee.MonitoringClient
+  var client = new Apigee.Client(client_creds); 
 
   var appUser;
   var fullFeedView = true;
@@ -53,8 +56,8 @@ $(document).ready(function () {
   $('#btn-update-account').bind('click', updateUser);
   $('#btn-show-my-feed').bind('click', showMyFeed);
   $('#btn-show-full-feed').bind('click', showFullFeed);
-  $('#btn-show-create-message').bind('click', function() {;
-    $("#content").val('');
+    $('#btn-show-create-message').bind('click', function () {
+        $("#content").val('');
     $("#content").focus();
   });
   $('#post-message').bind('click', postMessage);
@@ -249,7 +252,7 @@ $(document).ready(function () {
         password:password,
         name:name,
         email:email
-      }
+      };
 
       client.createEntity(options, function (err, newUser) {
         if (err){
@@ -295,26 +298,38 @@ $(document).ready(function () {
       var newpassword = $("#update-newpassword").val();
     }
     if (Usergrid.validation.validateName(name, function (){
-          $("#update-name").focus();
-          $("#update-name").addClass('error');}) &&
-        Usergrid.validation.validateEmail(email, function (){
-          $("#update-email").focus();
-          $("#update-email").addClass('error');})  &&
-        Usergrid.validation.validateUsername(username, function (){
-          $("#update-username").focus();
-          $("#update-username").addClass('error');})  &&
-        (newpassword == '') ||
-        Usergrid.validation.validatePassword(newpassword, function (){
-          $("#update-newpassword").focus();
-          $("#update-newpassword").addClass('error');})  ) {
+        $("#update-name").focus();
+        $("#update-name").addClass('error');}) &&
+      Usergrid.validation.validateEmail(email, function (){
+        $("#update-email").focus();
+        $("#update-email").addClass('error');})  &&
+      Usergrid.validation.validateUsername(username, function (){
+        $("#update-username").focus();
+        $("#update-username").addClass('error');})  &&
+      (newpassword == '') ||
+      Usergrid.validation.validatePassword(newpassword, function (){
+        $("#update-newpassword").focus();
+        $("#update-newpassword").addClass('error');})  ) {
 
-      appUser.set({"name":name,"username":username,"email":email,"oldpassword":oldpassword, "newpassword":newpassword});
+      appUser.set({"name":name,"username":username,"email":email});
       appUser.save(function (err) {
         if (err) {
           window.location = "#login";
-          $('#user-message-update-account').html('<strong>There was an error updating your account</strong>');
+          $('#user-message-update-account').html('<span style="color:red;"><strong>There was an error updating your account</strong></span>');
         } else {
-          $('#user-message-update-account').html('<strong>Your account was updated</strong>');
+          if (oldpassword && newpassword) {
+            appUser.changePassword(oldpassword, newpassword,
+                function (err) {
+                  if (err) {
+                    $('#user-message-update-account').html('<span style="color:red;"><strong>There was an error updating your password</strong><span>');
+                  } else {
+                    $('#user-message-update-account').html('<strong>Your account was updated</strong>');
+                  }
+                }
+            );
+          } else {
+            $('#user-message-update-account').html('<strong>Your account was updated</strong>');
+          }
         }
       });
     }
@@ -362,8 +377,8 @@ $(document).ready(function () {
       var options = {
         type:'user/me/feed',
         qs:{"ql":"order by created desc"}
-      }
-      client.createCollection(options, function(err, collectionObj){
+      };
+      client.createCollection(options, function(err, response, collectionObj){
         if (err) {
          alert('Could not get user feed. Please try again.');
         } else {
@@ -416,9 +431,9 @@ $(document).ready(function () {
       var options = {
         type:'activities',
         qs:{"ql":"order by created desc"}
-      }
+      };
       //no feed obj yet, so make a new one
-      client.createCollection(options, function(err, collectionObj){
+      client.createCollection(options, function(err, results, collectionObj){
         if (err) {
           alert('Could not get activity feed. Please try again.');
         } else {
@@ -459,7 +474,7 @@ $(document).ready(function () {
 
       if ('email' in actor) {
         email = actor.email;
-        imageUrl = 'http://www.gravatar.com/avatar/' + MD5(email.toLowerCase()) + '?s=' + 50;
+        imageUrl = 'http://www.gravatar.com/avatar/' + md5(email.toLowerCase()) + '?s=' + 50;
       }
       if (!email) {
         if ('image' in actor && 'url' in actor.image) {
@@ -467,7 +482,7 @@ $(document).ready(function () {
         }
       }
       if (!imageUrl) {
-        imageUrl = 'http://www.gravatar.com/avatar/' + MD5('rod@apigee.com') + '?s=' + 50;
+        imageUrl = 'http://www.gravatar.com/avatar/' + md5('rod@apigee.com') + '?s=' + 50;
       }
 
       formattedTime = prettyDate(created);
@@ -600,7 +615,7 @@ $(document).ready(function () {
   // Takes a numeric date value (in seconds) and returns a string
   // representing how long ago the date represents.
   function prettyDate(createdDateValue) {
-    var diff = (((new Date()).getTime() - createdDateValue) / 1000)
+    var diff = (((new Date()).getTime() - createdDateValue) / 1000);
     var day_diff = Math.floor(diff / 86400);
 
     if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
